@@ -1,1 +1,6 @@
-
+certifi==2020.6.20
+chardet==3.0.4
+idna==2.10
+manage.py==0.2.10
+requests==2.26.0
+urllib3==1.26.5
