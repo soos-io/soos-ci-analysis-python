@@ -1,2 +1,8 @@
-- name: Upload assets to a Release
-  uses: AButler/upload-release-assets@v2.0
+jobs:
+  build:
+    # ...
+    steps:
+      - uses: AButler/upload-release-assets@v2.0
+        with:
+          files: 'artifacts/*;packages/*.nupkg'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
