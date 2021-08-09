@@ -3,7 +3,7 @@ on: push
 
 commit:
     name: 'Commit new dist & version files'
-    needs: build
+    #needs: build
     runs-on: ubuntu-latest
 
     steps:
