@@ -1,14 +1,16 @@
 name: 'Master Code Updated'
 on: push
 
-jobs:
-  build:
-    name: 'Generate dist'
+commit:
+    name: 'Commit new dist & version files'
+    needs: build
     runs-on: ubuntu-latest
 
-      name: Create a new release
-      uses: Xotl/cool-github-releases@v1
-      with:
-        mode: update
-        tag_name: "v2.0"
-        github_token: ${{ github.token }} 
+    steps:
+
+      - name: Create a new release
+        uses: Xotl/cool-github-releases@v1
+        with:
+          mode: update
+          tag_name: ${{env.NEW_TAG}}
+          github_token: ${{ github.token }} 
