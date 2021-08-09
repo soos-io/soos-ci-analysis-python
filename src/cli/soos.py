@@ -99,7 +99,7 @@ class SOOSStructureAPI:
                     requests.post(
                         url=api_url,
                         data=json.dumps(structure_api_data),
-                        headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'}
+                        headers={'x-pa-apikey': soos_context.api_key, 'Content-Type': 'application/json'}
                     )
                 )
                 break
