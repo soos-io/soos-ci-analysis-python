@@ -1,14 +1,20 @@
 name: 'Master Code Updated'
 on: push
-steps:
-    #...
-    - name: Set enviroment for github-release
-      run: |
-        echo ::set-env name=RELEASE_TAG::"v1.0.1beta"
-        echo ::set-env name=RELEASE_NAME::"$GITHUB_WORKFLOW"
 
-    - uses: meeDamian/github-release@2.0
+jobs:
+  build:
+    name: 'Generate dist'
+    runs-on: ubuntu-latest
+
+      name: Create a new release
+      uses: Xotl/cool-github-releases@v1
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ env.RELEASE_TAG }}
-        name: ${{ env.RELEASE_NAME }}
+        mode: update
+        tag_name: "v2.0"
+        github_token: ${{ github.token }} 
+
+      name: Upload assets to a Release
+      uses: AButler/upload-release-assets@v2.0
+      with:
+        files: 'requirements.sha256;soos.sha256'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
