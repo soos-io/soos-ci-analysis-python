@@ -1,4 +1,5 @@
 name: 'Master Code Updated'
+on: push
 steps:
     #...
     - name: Set enviroment for github-release
