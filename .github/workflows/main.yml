@@ -1,4 +1,4 @@
-- name: It should create a release with assets README.md and LICENCE 
+  name: It should create a release with assets README.md and LICENCE 
   uses: Xotl/cool-github-releases@v1
   with:
     mode: update
