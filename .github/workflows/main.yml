@@ -1,25 +1,8 @@
-name: Publish
-
-on:
-  push:
-    tags:
-      - '*'
-
-jobs:
-  build:
-    name: Publish binaries
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: cargo build --release
-    - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: target/release/mything
-        asset_name: mything
-        tag: ${{ github.ref }}
-        overwrite: true
-        body: "This is my release text"
+- name: It should create a release with assets README.md and LICENCE 
+  uses: Xotl/cool-github-releases@v1
+  with:
+    mode: update
+    tag_name: v3.0.0
+    body_mrkdwn: "### It works!\n Wow, it worked like a charm 🎉"
+    assets: myFolder/README.md
+    github_token: ${{ github.token }}
