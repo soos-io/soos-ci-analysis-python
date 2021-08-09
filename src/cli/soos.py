@@ -397,7 +397,8 @@ class SOOS:
         {'file_pattern': 'project.assets.json', 'package_manager': 'NuGet'}, 
         {'file_pattern': '*.csproj', 'package_manager': 'NuGet'},
         {'file_pattern': '*packages.lock.json', 'package_manager': 'NuGet'}, 
-        {'file_pattern': 'packet*','package_manager': 'NuGet'},
+        {'file_pattern': 'packet*','package_manager': 'NuGet'}
+    ]
 
     def __init__(self):
         self.context = SOOSContext()
