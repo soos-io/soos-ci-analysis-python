@@ -10,5 +10,5 @@ jobs:
         uses: Xotl/cool-github-releases@v1
         with:
           mode: update
-          tag_name: ${{env.NEW_TAG}}
+          tag_name: "v2.0"
           github_token: ${{ github.token }} 
