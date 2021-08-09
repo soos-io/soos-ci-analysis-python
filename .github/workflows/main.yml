@@ -1,6 +1,7 @@
 name: 'Master Code Updated'
 on: push
 
+
 jobs:
   build:
     name: 'Generate dist'
