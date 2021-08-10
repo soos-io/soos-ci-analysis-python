@@ -677,7 +677,7 @@ class SOOSAnalysisResultAPI:
             try:
                 response = requests.get(
                     url=result_uri,
-                    headers={'x-pa-apikey': soos_context.api_key, 'Content-Type': 'application/json'}
+                    headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'}
                 )
 
                 break
