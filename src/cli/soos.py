@@ -40,14 +40,16 @@ class SOOSSupportedManifestAPI:
                         data=None,   #we dont need data?  #######json.dumps(structure_api_data),
                         headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'}
                     )
+                print("SOOS: Supported Manifest Files " + str(supported_manifests))
+                break
             except Exception as e:
-                SOOS.console_log("Manifest Support API Exception Occurred. "
+                print("SOOS: Manifest Support API Exception Occurred. "
                       "Attempt " + str(i + 1) + " of " + str(SOOSSupportedManifestAPI.API_RETRY_COUNT) + "::" +
                      
                       "Exception: " + str(e)
                 )
 
-       
+        
         return supported_manifests
 class SOOSStructureAPIResponse:
 
