@@ -569,7 +569,7 @@ class SOOS:
 
             content_object = json.loads(response.content)
 
-            if response.status_code < 300:
+            if response.status_code < 299:
 
                 analysis_status = str(content_object["status"])
 
@@ -610,6 +610,11 @@ class SOOS:
                     )
                     time.sleep(analysis_result_polling_interval)
                     continue
+            elif response.status_code == 503:
+                SOOS.console_log("------------------------")
+                SOOS.console_log("Sorry! We are temporarily down for maintenance.: API Response Status Code: " + str(response.status_code))
+                SOOS.console_log("------------------------")
+                sys.exit(1)
             else:
                 SOOS.console_log("------------------------")
                 SOOS.console_log("ERROR: API Response Status Code: " + str(response.status_code))
@@ -1042,9 +1047,12 @@ if __name__ == "__main__":
                 sys.exit(0)
 
         if structure_response.original_response.status_code > 299:
-            print("SOOS: A Structure API error occurred: Response Code " +
-                  str(structure_response.original_response.status_code)
-            )
+
+            if structure_response.original_response.status_code == 503:
+                SOOS.console_log("Sorry! We are temporarily down for maintenance. Response Code " + str(structure_response.original_response.status_code))
+
+            else:
+                SOOS.console_log("A Structure API error occurred: Response Code " + str(structure_response.original_response.status_code))
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
             else:
@@ -1087,7 +1095,10 @@ if __name__ == "__main__":
                 SOOS.console_log("Analysis Start API Response Code: " + str(response.status_code))
 
                 if response.status_code > 299:
-                    SOOS.console_log("An error occurred: " + str(response.content))
+                    if response.status_code == 503:
+                        SOOS.console_log("Sorry! We are temporarily down for maintenance!" + str(response.content))
+                    else:                  
+                        SOOS.console_log("An error occurred: " + str(response.content))
                     if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                         sys.exit(1)
                     else:
