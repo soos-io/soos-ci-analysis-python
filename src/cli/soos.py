@@ -7,13 +7,45 @@ import fnmatch
 import os
 import argparse
 import time
-
 import urllib.parse
 import platform
 
 from pathlib import Path  # User Home Folder references
 
+class SOOSSupportedManifestAPI:
+    
+    API_RETRY_COUNT = 3
 
+    URI_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/manifests"
+
+    def __init__(self):
+        pass 
+    
+    @staticmethod
+    def generate_api_url(soos_context):
+        url = SOOSSupportedManifestAPI.URI_TEMPLATE
+        url = url.replace("{soos_base_uri}", soos_context.base_uri)
+        url = url.replace("{soos_client_id}", soos_context.client_id)
+
+        return url
+    
+    def exec(soos_context):
+        for i in range(SOOSSupportManifestAPI.API_RETRY_COUNT):
+            try:
+                supported_manifests = requests.post(
+                        url=api_url,
+                        data=None,   #we dont need data?  #######json.dumps(structure_api_data),
+                        headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'}
+                    )
+            except Exception as e:
+                SOOS.console_log("Manifest Support API Exception Occurred. "
+                      "Attempt " + str(i + 1) + " of " + str(SOOSSupportedManifestAPI.API_RETRY_COUNT) + "::" +
+                     
+                      "Exception: " + str(e)
+                )
+
+       
+        return supported_manifests
 class SOOSStructureAPIResponse:
 
     def __init__(self, structure_response):
