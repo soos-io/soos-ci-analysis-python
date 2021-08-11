@@ -30,6 +30,9 @@ class SOOSSupportedManifestAPI:
         return url
     
     def exec(soos_context):
+        
+        api_url = SOOSSupportedManifestAPI.generate_api_url(soos_context)
+        
         for i in range(SOOSSupportManifestAPI.API_RETRY_COUNT):
             try:
                 supported_manifests = requests.post(
@@ -1035,7 +1038,11 @@ if __name__ == "__main__":
     if sys.version_info < (3, 6):
         print("**** SOOS FATAL ERROR: Python Version 3.6 or higher is required ****")
         sys.exit(1)
-
+    
+    
+    #Run Manifest API first ....
+    
+    
     # Initialize SOOS
     soos = SOOS()
 
