@@ -649,7 +649,7 @@ class SOOS:
                     continue
             elif response.status_code == 503:
                 SOOS.console_log("------------------------")
-                SOOS.console_log("Sorry! We are temporarily down for maintenance.: API Response Status Code: " + str(response.status_code))
+                SOOS.console_log("Thanks for your patience while we update our system. For more information visit https://soos.io/status/")
                 SOOS.console_log("------------------------")
                 sys.exit(1)
             else:
@@ -1090,7 +1090,7 @@ if __name__ == "__main__":
         if structure_response.original_response.status_code > 299:
 
             if structure_response.original_response.status_code == 503:
-                SOOS.console_log("Sorry! We are temporarily down for maintenance. Response Code " + str(structure_response.original_response.status_code))
+                SOOS.console_log("Thanks for your patience while we update our system. For more information visit https://soos.io/status/")
 
             else:
                 SOOS.console_log("A Structure API error occurred: Response Code " + str(structure_response.original_response.status_code))
@@ -1137,7 +1137,7 @@ if __name__ == "__main__":
 
                 if response.status_code > 299:
                     if response.status_code == 503:
-                        SOOS.console_log("Sorry! We are temporarily down for maintenance!" + str(response.content))
+                        SOOS.console_log("Thanks for your patience while we update our system. For more information visit https://soos.io/status/")
                     else:                  
                         SOOS.console_log("An error occurred: " + str(response.content))
                     if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
