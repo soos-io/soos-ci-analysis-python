@@ -647,7 +647,7 @@ class SOOS:
                     )
                     time.sleep(analysis_result_polling_interval)
                     continue
-            elif response.status_code == 503:
+            elif response.status_code > 500:
                 SOOS.console_log("------------------------")
                 SOOS.console_log("Thanks for your patience while we update our system. For more information visit https://soos.io/status/")
                 SOOS.console_log("------------------------")
