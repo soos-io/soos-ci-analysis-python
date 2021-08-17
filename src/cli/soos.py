@@ -1,3 +1,6 @@
+import sklearn
+#testing
+import tensorflow as tf
 import requests
 import json
 from datetime import datetime
@@ -428,8 +431,7 @@ class SOOS:
         {'file_pattern': 'package.json', 'package_manager': 'NPM'},
         {'file_pattern': 'package-lock.json', 'package_manager': 'NPM'},
         {'file_pattern': 'yarn.lock', 'package_manager': 'NPM'},
-        {'file_pattern': 'pom.xml', 'package_manager': 'Java'},
-        
+        {'file_pattern': 'pom.xml', 'package_manager': 'Java'},        
         {'file_pattern': 'packages.config', 'package_manager': 'NuGet'}, 
         {'file_pattern': 'project.assets.json', 'package_manager': 'NuGet'}, 
         {'file_pattern': '*.csproj', 'package_manager': 'NuGet'},
