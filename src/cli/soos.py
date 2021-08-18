@@ -1078,7 +1078,7 @@ if __name__ == "__main__":
 
     if soos.script.mode in (SOOSModeOfOperation.RUN_AND_WAIT, SOOSModeOfOperation.ASYNC_INIT):
 
-        # Make API call and store response
+        # Make API call and store response, assuming that status code < 299, ie successful call.
         structure_response = SOOSStructureAPI.exec(soos.context)
 
         if structure_response.original_response is None:
@@ -1088,8 +1088,7 @@ if __name__ == "__main__":
             else:
                 sys.exit(0)
 
-    
-        elif structure_response.original_response.status_code == 503:
+        elif structure_response.original_response.status_code > 500:
             try:
                 SOOS.console_log(structure_response.original_response.message + more_info)
                 sys.exit(1)
@@ -1103,7 +1102,8 @@ if __name__ == "__main__":
             except:
                 SOOS.console_log("The API credentials you provided were not valid." + more_info)
                 sys.exit(1)
-        else:
+        elif structure_response.original_response.status_code > 400: 
+            #all other cases, eg other 4xx or 5xx messages
             SOOS.console_log("A Structure API error occurred: Response Code " + str(structure_response.original_response.status_code))
                 if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                     sys.exit(1)
@@ -1146,7 +1146,7 @@ if __name__ == "__main__":
 
                 SOOS.console_log("Analysis Start API Response Code: " + str(response.status_code))
 
-                if response.status_code == 503:
+                if response.status_code > 500:
                     try:
                         SOOS.console_log(response.message + more_info) 
                         sys.exit(1)
@@ -1160,9 +1160,9 @@ if __name__ == "__main__":
                     except:
                         SOOS.console_log("The provided API credentials were not valid." + str(response.content))
                         sys.exit(1)
-                elif response.status_code < 200:
+                else:
 
-                    # NOTE: This is the only route where the initiate request was successful
+                    # NOTE: This is the only route where the initiate request was successful, ie status < 299
 
                     SOOS.console_log(
                         "Analysis request is running, once completed, access the report using the links below"
@@ -1189,6 +1189,7 @@ if __name__ == "__main__":
                         SOOS.console_log("Write Analysis URL To File: " + soos.script.async_result_file)
 
                     sys.exit(0)
+         
             except Exception as e:
                 SOOS.console_log(
                     "ERROR: " + str(e)
