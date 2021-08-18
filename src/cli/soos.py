@@ -648,11 +648,11 @@ class SOOS:
                     )
                     time.sleep(analysis_result_polling_interval)
                     continue
-            elif response.status_code > 500:
-                SOOS.console_log("------------------------")
-                SOOS.console_log("Thanks for your patience while we update our system. For more information visit https://soos.io/status/")
-                SOOS.console_log("------------------------")
-                sys.exit(1)
+            # elif response.status_code > 500:
+            #     SOOS.console_log("------------------------")
+            #     SOOS.console_log("Thanks for your patience while we update our system. For more information visit https://soos.io/status/")
+            #     SOOS.console_log("------------------------")
+            #     sys.exit(1)
             else:
                 SOOS.console_log("------------------------")
                 SOOS.console_log("ERROR: API Response Status Code: " + str(response.status_code))
@@ -1146,16 +1146,21 @@ if __name__ == "__main__":
 
                 SOOS.console_log("Analysis Start API Response Code: " + str(response.status_code))
 
-                if response.status_code > 299:
-                    if response.status_code == 503:
-                        SOOS.console_log("Thanks for your patience while we update our system. For more information visit https://soos.io/status/")
-                    else:                  
-                        SOOS.console_log("An error occurred: " + str(response.content))
-                    if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
+                if response.status_code == 503:
+                    try:
+                        SOOS.console_log(response.message + more_info) 
                         sys.exit(1)
-                    else:
-                        sys.exit(0)
-                else:
+                    except:
+                        SOOS.console_log("Thanks for your patience while we update our system" + more_info)
+                        sys.exit(1)
+                elif response.status_code == 403:
+                    try: 
+                        SOOS.console_log(response.message + more_info)
+                        sys.exit(1)                
+                    except:
+                        SOOS.console_log("The provided API credentials were not valid." + str(response.content))
+                        sys.exit(1)
+                elif response.status_code < 200:
 
                     # NOTE: This is the only route where the initiate request was successful
 
