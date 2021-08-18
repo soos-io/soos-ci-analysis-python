@@ -1,5 +1,3 @@
-#testing 1234
-#what is this 
 import requests
 import json
 from datetime import datetime
