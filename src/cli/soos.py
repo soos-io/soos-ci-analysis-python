@@ -1095,6 +1095,7 @@ if __name__ == "__main__":
             except:
                 SOOS.console_log("Thanks for your patience while we update our system." + more_info)
                 sys.exit(1)
+        
         elif structure_response.original_response.status_code == 403:
             try:
                 SOOS.console_log(structure_response.original_response.message + more_info)
@@ -1102,6 +1103,7 @@ if __name__ == "__main__":
             except:
                 SOOS.console_log("The API credentials you provided were not valid." + more_info)
                 sys.exit(1)
+        
         elif structure_response.original_response.status_code > 400: 
             #all other cases, eg other 4xx or 5xx messages
             SOOS.console_log("A Structure API error occurred: Response Code " + str(structure_response.original_response.status_code))
@@ -1158,8 +1160,16 @@ if __name__ == "__main__":
                         SOOS.console_log(response.message + more_info)
                         sys.exit(1)                
                     except:
-                        SOOS.console_log("The provided API credentials were not valid." + str(response.content))
+                        SOOS.console_log("The provided API credentials were not valid." + more_info)
                         sys.exit(1)
+                elif response.status_code > 400: #for any other 4xx cases 
+                    try: 
+                        SOOS.console_log(response.message + more_info)
+                        sys.exit(1)
+                    except:
+                        SOOS.console_log("Sorry, there was a problem with your request." + more_info)
+                        sys.exit(1)
+                    
                 else:
 
                     # NOTE: This is the only route where the initiate request was successful, ie status < 299
