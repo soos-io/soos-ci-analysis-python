@@ -1048,7 +1048,7 @@ if __name__ == "__main__":
     
     # Initialize SOOS
     soos = SOOS()
-
+    more_info = " For more information visit https://soos.io/status/"
     # Register and load script arguments
     parser = soos.script.register_arguments()
     args = parser.parse_args()
@@ -1088,17 +1088,27 @@ if __name__ == "__main__":
             else:
                 sys.exit(0)
 
-        if structure_response.original_response.status_code > 299:
-
-            if structure_response.original_response.status_code == 503:
-                SOOS.console_log("Thanks for your patience while we update our system. For more information visit https://soos.io/status/")
-
-            else:
-                SOOS.console_log("A Structure API error occurred: Response Code " + str(structure_response.original_response.status_code))
-            if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
+    
+        elif structure_response.original_response.status_code == 503:
+            try:
+                SOOS.console_log(structure_response.original_response.message + more_info)
                 sys.exit(1)
-            else:
-                sys.exit(0)
+            except:
+                SOOS.console_log("Thanks for your patience while we update our system." + more_info)
+                sys.exit(1)
+        elif structure_response.original_response.status_code == 403:
+            try:
+                SOOS.console_log(structure_response.original_response.message + more_info)
+                sys.exit(1)
+            except:
+                SOOS.console_log("The API credentials you provided were not valid." + more_info)
+                sys.exit(1)
+        else:
+            SOOS.console_log("A Structure API error occurred: Response Code " + str(structure_response.original_response.status_code))
+                if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
+                    sys.exit(1)
+                else:
+                    sys.exit(0)
 
         # ## STRUCTURE API CALL SUCCESSFUL - CONTINUE
 
