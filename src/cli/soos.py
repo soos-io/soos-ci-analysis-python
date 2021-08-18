@@ -1104,7 +1104,10 @@ if __name__ == "__main__":
         
         elif structure_response.original_response.status_code > 400: 
             #all other cases, eg other 4xx or 5xx messages
-            SOOS.console_log("A Structure API error occurred: Response Code " + str(structure_response.original_response.status_code))
+            try: 
+                SOOS.console_log(structure_response.original_response.message + more_info)
+            except:
+                SOOS.console_log("There was a problem with your request" + more_info)
                 if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                     sys.exit(1)
                 else:
@@ -1168,33 +1171,31 @@ if __name__ == "__main__":
                         SOOS.console_log("Sorry, there was a problem with your request." + more_info)
                         sys.exit(1)
                     
-                else:
+                # NOTE: This is the only route where the initiate request was successful, ie status < 299
 
-                    # NOTE: This is the only route where the initiate request was successful, ie status < 299
+                SOOS.console_log(
+                    "Analysis request is running, once completed, access the report using the links below"
+                )
+                SOOS.console_log("ReportUrl: " + structure_response.report_url)
+                SOOS.console_log("EmbedUrl: " + structure_response.embed_url)
 
-                    SOOS.console_log(
-                        "Analysis request is running, once completed, access the report using the links below"
+                if soos.script.mode == SOOSModeOfOperation.RUN_AND_WAIT:
+
+                    soos.analysis_result_exec(
+                        structure_response.report_status_url,
+                        soos.script.analysis_result_max_wait,
+                        soos.script.analysis_result_polling_interval
                     )
-                    SOOS.console_log("ReportUrl: " + structure_response.report_url)
-                    SOOS.console_log("EmbedUrl: " + structure_response.embed_url)
 
-                    if soos.script.mode == SOOSModeOfOperation.RUN_AND_WAIT:
+                elif soos.script.mode == SOOSModeOfOperation.ASYNC_INIT:
 
-                        soos.analysis_result_exec(
-                            structure_response.report_status_url,
-                            soos.script.analysis_result_max_wait,
-                            soos.script.analysis_result_polling_interval
-                        )
+                    # Write file here for RESULT process to pick up when it runs later
+                    file_contents = {"report_status_url": structure_response.report_status_url}
+                    file = open(soos.script.async_result_file, "w")
+                    file.write(json.dumps(file_contents))
+                    file.close()
 
-                    elif soos.script.mode == SOOSModeOfOperation.ASYNC_INIT:
-
-                        # Write file here for RESULT process to pick up when it runs later
-                        file_contents = {"report_status_url": structure_response.report_status_url}
-                        file = open(soos.script.async_result_file, "w")
-                        file.write(json.dumps(file_contents))
-                        file.close()
-
-                        SOOS.console_log("Write Analysis URL To File: " + soos.script.async_result_file)
+                    SOOS.console_log("Write Analysis URL To File: " + soos.script.async_result_file)
 
                     sys.exit(0)
          
