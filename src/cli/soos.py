@@ -12,45 +12,7 @@ import platform
 
 from pathlib import Path  # User Home Folder references
 
-class SOOSSupportedManifestAPI:
-    
-    API_RETRY_COUNT = 3
 
-    URI_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/manifests"
-
-    def __init__(self):
-        pass 
-    
-    @staticmethod
-    def generate_api_url(soos_context):
-        url = SOOSSupportedManifestAPI.URI_TEMPLATE
-        url = url.replace("{soos_base_uri}", soos_context.base_uri)
-        url = url.replace("{soos_client_id}", soos_context.client_id)
-
-        return url
-    
-    def exec(soos_context):
-        
-        api_url = SOOSSupportedManifestAPI.generate_api_url(soos_context)
-        
-        for i in range(SOOSSupportManifestAPI.API_RETRY_COUNT):
-            try:
-                supported_manifests = requests.post(
-                        url=api_url,
-                        data=None,   #we dont need data?  #######json.dumps(structure_api_data),
-                        headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'}
-                    )
-                print("SOOS: Supported Manifest Files " + str(supported_manifests))
-                break
-            except Exception as e:
-                print("SOOS: Manifest Support API Exception Occurred. "
-                      "Attempt " + str(i + 1) + " of " + str(SOOSSupportedManifestAPI.API_RETRY_COUNT) + "::" +
-                     
-                      "Exception: " + str(e)
-                )
-
-        
-        return supported_manifests
 class SOOSStructureAPIResponse:
 
     def __init__(self, structure_response):
@@ -131,21 +93,31 @@ class SOOSStructureAPI:
 
         for i in range(0, SOOSStructureAPI.API_RETRY_COUNT):
             try:
-                
-                api_response = SOOSStructureAPIResponse(
-                    requests.post(
+                kernel = requests.post(
                         url=api_url,
                         data=json.dumps(structure_api_data),
-                        headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'}
-                    )
-                )
+                        headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'})
+
+                if kernel.status_code > 500:
+                    # 
+                    api_response = kernel
+                
+                elif kernel.status_code == 403:
+                    api_reponse = kernel
+
+                else:
+                    api_response = SOOSStructureAPIResponse(kernel)
+
+                #print("API response is", api_response)
+
                 break
 
-            except Exception as e:
+            except:
+                #print("THis is the reponse", api_reponse)
                 SOOS.console_log("Structure API Exception Occurred. "
                       "Attempt " + str(i + 1) + " of " + str(SOOSStructureAPI.API_RETRY_COUNT) + "::" +
                       "Data: " + str(structure_api_data) + "::" +
-                      "Exception: " + str(e)
+                      "Exception: " + str("egg")
                 )
 
         return api_response
@@ -406,7 +378,6 @@ class SOOSManifestAPI:
                 )
 
                 SOOS.console_log("Manifest Put Executed: " + manifest_name)
-
                 break
 
             except Exception as e:
@@ -418,31 +389,30 @@ class SOOSManifestAPI:
 
 class SOOS:
 
-    MANIFEST_FILES = [
-        {'file_pattern': 'Gemfile', 'package_manager': 'Ruby'},
-        {'file_pattern': 'Gemfile.lock', 'package_manager': 'Ruby'},
-        {'file_pattern': '*req*.txt', 'package_manager': 'Python'},
-        {'file_pattern': 'pipfile', 'package_manager': 'Python'},
-        {'file_pattern': '*.toml','package_manager': 'Python'},
-        {'file_pattern': 'poetry.lock','package_manager': 'Python'},
-        {'file_pattern': 'package.json', 'package_manager': 'NPM'},
-        {'file_pattern': 'package-lock.json', 'package_manager': 'NPM'},
-        {'file_pattern': 'yarn.lock', 'package_manager': 'NPM'},
-        {'file_pattern': 'pom.xml', 'package_manager': 'Java'},        
-        {'file_pattern': 'packages.config', 'package_manager': 'NuGet'}, 
-        {'file_pattern': 'project.assets.json', 'package_manager': 'NuGet'}, 
-        {'file_pattern': '*.csproj', 'package_manager': 'NuGet'},
-        {'file_pattern': '*packages.lock.json', 'package_manager': 'NuGet'}, 
-        {'file_pattern': 'packet*','package_manager': 'NuGet'}
-    ]
 
     def __init__(self):
         self.context = SOOSContext()
         self.script = SOOSAnalysisScript()
 
-    def find_manifest_files(self, file_pattern):
+    def load_manifest_types(self):
+        #parser = soos.script.register_arguments()
+        #args = parser.parse_args()
+        #soos.script.load_script_arguments()
+        #soos.context.load(args)
+        MANIFEST_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/manifests"
+        murl = MANIFEST_TEMPLATE
+        murl = murl.replace("{soos_base_uri}", self.context.base_uri)
+        murl = murl.replace("{soos_client_id}", self.context.client_id)
+        my_manifests = requests.get(
+                    url=murl,
+                    headers={'x-soos-apikey': self.context.api_key, 'Content-Type': 'application/json'}
+                )
+        m = json.loads(my_manifests.content)
+        return m
+
+    def find_manifest_files(self, pattern):
         return glob.glob(
-            self.context.source_code_path + '/**/' + file_pattern,
+            self.context.source_code_path + '/**/' + pattern,
             recursive=True
         )
 
@@ -455,19 +425,29 @@ class SOOS:
         SOOS.console_log("------------------------")
         SOOS.console_log("Begin Recursive Manifest Search")
         SOOS.console_log("------------------------")
+        #SOOS.console_log("Checking for Currently Supported Manifest Types")
 
-        for manifest_file in SOOS.MANIFEST_FILES:
+        MANIFEST_FILES = self.load_manifest_types()
 
-            package_manager = manifest_file['package_manager']
-
-            manifest_name = manifest_file['file_pattern']
-
-            SOOS.console_log("Looking for " + package_manager + " " + manifest_name + "...")
-
-            files = self.find_manifest_files(manifest_file['file_pattern'])
-
+        
+        for manifest_file in MANIFEST_FILES:
+            files = []
+            package_manager = manifest_file['packageManager']
+            SOOS.console_log("Looking for " + package_manager + " files...")
+             
+            for entries in manifest_file["manifests"]:
+                pattern = entries["pattern"]
+                if pattern == ".*req.*\.txt": 
+                    pattern = "*req*.txt"
+                
+                #print("Current file pattern", pattern)
+                candidate_files = self.find_manifest_files(pattern = pattern) 
+                #print("Candidate: ", candidate_files)
+                for cf in candidate_files:
+                    files.append(cf)
             # iterate each
             # avoid directories to exclude
+            
             for file_name in files:
                 exclude = False
                 pure_filename = os.path.basename(file_name)
@@ -550,7 +530,10 @@ class SOOS:
                                 )
 
 
-                                SOOS.console_log("Add manifest status code: " + str(response.status_code))
+                                SOOS.console_log("Add manifest status code: " + str(response.status_code) + " ====> {}".format(response.reason))
+                                print()
+                                print("=====================================")
+                                print()
                                 manifests_found_count += 1
 
                             else:
@@ -1042,17 +1025,35 @@ if __name__ == "__main__":
     
     
     #Run Manifest API first ....
-    
-    
+  
     # Initialize SOOS
     soos = SOOS()
     more_info = " For more information visit https://soos.io/status/"
+
     # Register and load script arguments
     parser = soos.script.register_arguments()
     args = parser.parse_args()
 
     soos.script.load_script_arguments()
-    
+    soos.context.load(args)
+    MANIFEST_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/manifests"
+    # murl = MANIFEST_TEMPLATE
+    # murl = murl.replace("{soos_base_uri}", soos.context.base_uri)
+    # murl = murl.replace("{soos_client_id}", soos.context.client_id)
+    # my_manifests = requests.get(
+    #                url=murl,
+    #                headers={'x-soos-apikey': soos.context.api_key, 'Content-Type': 'application/json'}
+    #           )
+    # print()
+    #print("ACCEPTABLE MANIFEST FORMAT LIST") ; print("---------------------------------") 
+    #print("first exampple!!!!!")
+    #print(dir(my_manifests))
+    #bob = json.loads(my_manifests.content)
+    #print(bob, type(bob))
+
+
+
+
     if not soos.context.load(args):
 
         SOOS.console_log("Could not find required Environment/Script Variables. "
@@ -1075,37 +1076,39 @@ if __name__ == "__main__":
                 sys.exit(0)
 
     if soos.script.mode in (SOOSModeOfOperation.RUN_AND_WAIT, SOOSModeOfOperation.ASYNC_INIT):
-
+        #print("TRY THIS", soos.context.base_uri)
         # Make API call and store response, assuming that status code < 299, ie successful call.
         structure_response = SOOSStructureAPI.exec(soos.context)
-
-        if structure_response.original_response is None:
+        #
+        if structure_response is None:
+           
             SOOS.console_log("A Structure API error occurred: Could not execute API.")
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
             else:
                 sys.exit(0)
-
+        
         elif structure_response.original_response.status_code > 500:
+            
             try:
-                SOOS.console_log(structure_response.original_response.message + more_info)
+                SOOS.console_log(structure_response.message + more_info)
                 sys.exit(1)
             except:
-                SOOS.console_log("Thanks for your patience while we update our system." + more_info)
+                SOOS.console_log("Hi! Thanks for your patience while we update our system." + more_info)
                 sys.exit(1)
         
         elif structure_response.original_response.status_code == 403:
             try:
-                SOOS.console_log(structure_response.original_response.message + more_info)
+                SOOS.console_log(structure_response.original_response.status_code + more_info)
                 sys.exit(1)
             except:
                 SOOS.console_log("The API credentials you provided were not valid." + more_info)
                 sys.exit(1)
         
-        elif structure_response.original_response.status_code > 400: 
+        elif structure_response.original_response.status_code >= 400: 
             #all other cases, eg other 4xx or 5xx messages
             try: 
-                SOOS.console_log(structure_response.original_response.message + more_info)
+                SOOS.console_log(structure_response.message + more_info)
             except:
                 SOOS.console_log("There was a problem with your request" + more_info)
                 if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
@@ -1114,7 +1117,7 @@ if __name__ == "__main__":
                     sys.exit(0)
 
         # ## STRUCTURE API CALL SUCCESSFUL - CONTINUE
-
+        
         SOOS.console_log("------------------------")
         SOOS.console_log("Analysis Structure Request Created")
         SOOS.console_log("------------------------")
@@ -1163,7 +1166,7 @@ if __name__ == "__main__":
                     except:
                         SOOS.console_log("The provided API credentials were not valid." + more_info)
                         sys.exit(1)
-                elif response.status_code > 400: #for any other 4xx cases 
+                elif response.status_code >= 400: #for any other 4xx cases 
                     try: 
                         SOOS.console_log(response.message + more_info)
                         sys.exit(1)
@@ -1251,4 +1254,5 @@ if __name__ == "__main__":
         else:
             sys.exit(0)
 
-            
+######
+     
