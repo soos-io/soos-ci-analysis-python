@@ -425,7 +425,6 @@ class SOOS:
         SOOS.console_log("------------------------")
         SOOS.console_log("Begin Recursive Manifest Search")
         SOOS.console_log("------------------------")
-        #SOOS.console_log("Checking for Currently Supported Manifest Types")
 
         MANIFEST_FILES = self.load_manifest_types()
 
@@ -437,12 +436,10 @@ class SOOS:
              
             for entries in manifest_file["manifests"]:
                 pattern = entries["pattern"]
-                if pattern == ".*req.*\.txt": 
+                if pattern == ".*req.*\\.txt": #this is problematic pattern
                     pattern = "*req*.txt"
-                
-                #print("Current file pattern", pattern)
                 candidate_files = self.find_manifest_files(pattern = pattern) 
-                #print("Candidate: ", candidate_files)
+
                 for cf in candidate_files:
                     files.append(cf)
             # iterate each
@@ -629,11 +626,11 @@ class SOOS:
                     )
                     time.sleep(analysis_result_polling_interval)
                     continue
-            # elif response.status_code > 500:
-            #     SOOS.console_log("------------------------")
-            #     SOOS.console_log("Thanks for your patience while we update our system. For more information visit https://soos.io/status/")
-            #     SOOS.console_log("------------------------")
-            #     sys.exit(1)
+            elif response.status_code > 500:
+                SOOS.console_log("------------------------")
+                SOOS.console_log("Thanks for your patience while we update our system. For more information visit https://soos.io/status/")
+                SOOS.console_log("------------------------")
+                sys.exit(1)
             else:
                 SOOS.console_log("------------------------")
                 SOOS.console_log("ERROR: API Response Status Code: " + str(response.status_code))
@@ -1023,8 +1020,7 @@ if __name__ == "__main__":
         print("**** SOOS FATAL ERROR: Python Version 3.6 or higher is required ****")
         sys.exit(1)
     
-    
-    #Run Manifest API first ....
+
   
     # Initialize SOOS
     soos = SOOS()
@@ -1037,21 +1033,6 @@ if __name__ == "__main__":
     soos.script.load_script_arguments()
     soos.context.load(args)
     MANIFEST_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/manifests"
-    # murl = MANIFEST_TEMPLATE
-    # murl = murl.replace("{soos_base_uri}", soos.context.base_uri)
-    # murl = murl.replace("{soos_client_id}", soos.context.client_id)
-    # my_manifests = requests.get(
-    #                url=murl,
-    #                headers={'x-soos-apikey': soos.context.api_key, 'Content-Type': 'application/json'}
-    #           )
-    # print()
-    #print("ACCEPTABLE MANIFEST FORMAT LIST") ; print("---------------------------------") 
-    #print("first exampple!!!!!")
-    #print(dir(my_manifests))
-    #bob = json.loads(my_manifests.content)
-    #print(bob, type(bob))
-
-
 
 
     if not soos.context.load(args):
@@ -1076,7 +1057,7 @@ if __name__ == "__main__":
                 sys.exit(0)
 
     if soos.script.mode in (SOOSModeOfOperation.RUN_AND_WAIT, SOOSModeOfOperation.ASYNC_INIT):
-        #print("TRY THIS", soos.context.base_uri)
+        
         # Make API call and store response, assuming that status code < 299, ie successful call.
         structure_response = SOOSStructureAPI.exec(soos.context)
         #
