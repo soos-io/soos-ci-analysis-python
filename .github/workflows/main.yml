@@ -1,18 +1,29 @@
 name: 'Master Code Updated'
 on: push
+  branches:
+    - PA-1963
 
 
 jobs:
   build:
-    name: 'Generate dist'
+    name: 'Something SHA'
     runs-on: ubuntu-latest
 
-      name: Create a new release
-      uses: Xotl/cool-github-releases@v1
+      name: whatisthis
+      uses: tristan-weil/ghaction-checksum-sign-artifact@v1.0.1
       with:
-        mode: update
-        tag_name: "v2.0"
-        github_token: ${{ github.token }} 
+        path: /*.py
+        checksum_digests: sha256
+        checksum_format: gnu 
+        checksum_output: one_file_per_digest
+      
+#         mode: update
+#         tag_name: "v2.0"
+#         github_token: ${{ github.token }} 
+        
+#       - name: ghaction-checksum-sign-artifact
+#   uses: tristan-weil/ghaction-checksum-sign-artifact@v1.0.1
+
 
 #       name: Upload assets to a Release
 #       uses: AButler/upload-release-assets@v2.0
