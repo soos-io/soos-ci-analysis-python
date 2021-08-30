@@ -1,7 +1,5 @@
 name: 'Master Code Updated'
 on: push
-  branches:
-    - PA-1963
 
 
 jobs:
