@@ -1,1 +1,29 @@
+on: 
+  push:
+    branches:
+      - PA-1963
+name: generate-sums
+jobs:
+  generate-sums:
+    runs-on: ubuntu-latest 
+    steps:
+      - uses: tristan-weil/ghaction-checksum-sign-artifact@v1.0.1
+        with:
+          path: /*.py
+          checksum_digests: sha256
+          checksum_format: gnu 
+          checksum_output: one_file_per_digest
+      
+#         mode: update
+#         tag_name: "v2.0"
+#         github_token: ${{ github.token }} 
+        
+#       - name: ghaction-checksum-sign-artifact
+#   uses: tristan-weil/ghaction-checksum-sign-artifact@v1.0.1
 
+
+#       name: Upload assets to a Release
+#       uses: AButler/upload-release-assets@v2.0
+#       with:
+#         files: 'requirements.sha256;soos.sha256'
+#         repo-token: ${{ secrets.GITHUB_TOKEN }}
