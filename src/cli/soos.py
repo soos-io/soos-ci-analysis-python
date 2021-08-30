@@ -1,4 +1,5 @@
 import requests
+import numpy
 import json
 from datetime import datetime
 import sys
