@@ -1,5 +1,5 @@
 # SOOS Security Analysis: Python Script
-## OSS Security for Everyone
+## OSS Security for Everyone.
 The SOOS Python Script is the most flexible way to run SOOS against your codebase to gain insights into your open source package risk. Run locally or on a CI/CD
 server, using either synchronous or asynchronous mode.
 
