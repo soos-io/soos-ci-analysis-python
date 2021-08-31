@@ -1,6 +1,8 @@
 # run soos.py with the -h flag for help
+#GET YOUR SOOS_CLIENT_ID and SOOS_API_KEY from the SOOS app and store them as enviromental variables
+
 # REQUIRED ARGS:
-SOOS_PROJECT_NAME="PJ_testing_new_wrapper"
+SOOS_PROJECT_NAME="YOUR PROJECT NAME HERE"
 
 # BUILD/BRANCH SPECIFIC ARGS:
 SOOS_COMMIT_HASH=""                # ENTER COMMIT HASH HERE IF KNOWN
@@ -12,7 +14,7 @@ SOOS_OPERATING_ENVIRONMENT=""      # ENTER OPERATING ENVIRONMENT HERE IF KNOWN (
 SOOS_INTEGRATION_NAME="Script"
 
 # OPTIONAL ARGS:
-WORKSPACE="C:/Users/pchen/Videos/REPO2"
+WORKSPACE="C:/Users/user/folder/repo" #PATH TO YOUR REPO
 SOOS_MODE="run_and_wait"
 SOOS_ON_FAILURE="fail_the_build"
 SOOS_DIRS_TO_EXCLUDE="soos"
@@ -20,8 +22,7 @@ SOOS_FILES_TO_EXCLUDE=""
 SOOS_ANALYSIS_RESULT_MAX_WAIT=300
 SOOS_ANALYSIS_RESULT_POLLING_INTERVAL=10
 SOOS_CHECKOUT_DIR="./"
-
-SOOS_API_BASE_URL="https://dev-api.soos.io/api/"
+SOOS_API_BASE_URL="https://api.soos.io/api/"
 
 
 
