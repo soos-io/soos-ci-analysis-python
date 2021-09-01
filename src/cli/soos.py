@@ -530,11 +530,12 @@ class SOOS:
                                     jmessage = response.json()["message"]
                                     jcode = response.json()["code"]
                                     SOOS.console_log("Add manifest status code: " + str(jcode) + " ====> {}".format(jmessage))
-                                    SOOS.console_log("We cannot scan this manifest file. For more info please visit https://soos.io")
+                                    
                                     print("=====================================")
                                     print()
+                                    manifests_found_count += 1 
                                 else:
-                                    SOOS.console_log("Add manifest status code: " + str(response.status_code) + " ====> Success!")
+                                    SOOS.console_log("There was some error with the Manifest API. For more information, please visit https://soos.io/support")
                                     print("=====================================")
                                     print()
                                     manifests_found_count += 1
