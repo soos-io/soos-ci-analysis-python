@@ -59,7 +59,8 @@ The script will always attempt to load a specific set of parameters from environ
 # run soos.py with the -h flag for help
 # REQUIRED ARGS:
 SOOS_PROJECT_NAME="YOUR_PROJECT_NAME_HERE"
-
+SOOS_LATEST_REPO="https://api.github.com/repos/soos-io/soos-ci-analysis-python/releases/latest"
+SOOS_TAGS="https://api.github.com/repos/soos-io/soos-ci-analysis-python/releases/tags/$tag"
 # BUILD/BRANCH SPECIFIC ARGS:
 SOOS_COMMIT_HASH=""                # ENTER COMMIT HASH HERE IF KNOWN
 SOOS_BRANCH_NAME=""                # ENTER BRANCH NAME HERE IF KNOWN
@@ -86,7 +87,7 @@ SOOS_API_BASE_URL="https://api.soos.io/api/"
 mkdir -p "${WORKSPACE}/soos/workspace"
 cd "${WORKSPACE}/soos"
 
-curl -s https://api.github.com/repos/soos-io/soos-ci-analysis-python/releases/latest | grep "browser_download_url" | cut -d '"' -f 4 | xargs -n 1 curl -LO
+curl -s $SOOS_LATEST_REPO | grep "browser_download_url" | cut -d '"' -f 4 | xargs -n 1 curl -LO
 sha256sum -c soos.sha256
 sha256sum -c requirements.sha256
 
