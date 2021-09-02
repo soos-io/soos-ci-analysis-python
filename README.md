@@ -86,7 +86,7 @@ SOOS_API_BASE_URL="https://api.soos.io/api/"
 mkdir -p "${WORKSPACE}/soos/workspace"
 cd "${WORKSPACE}/soos"
 
-curl -s https://api.github.com/repos/soos-io/soos-ci-analysis-python/releases/latest | grep "browser_download_url" | cut -d '"' -f 4 | xargs -n 1 curl -LO
+curl -s https://api.github.com/repos/soos-io/soos-ci-analysis-python/releases/latest | findstr "browser_download_url" | cut -d '"' -f 4 | xargs -n 1 curl -LO
 sha256sum -c soos.sha256
 sha256sum -c requirements.sha256
 
