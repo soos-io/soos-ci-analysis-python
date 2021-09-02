@@ -130,7 +130,6 @@ set "SOOS_BUILD_URI="                  :: ENTER BUILD URI HERE IF KNOWN
 set "SOOS_OPERATING_ENVIRONMENT="      :: ENTER OPERATING ENVIRONMENT HERE IF KNOWN (default will be provided)
 set "SOOS_INTEGRATION_NAME=Script"
 
-```
 :: **************************** Modify Above Only *************** ::
 
 set "ROOT=%CD%/soos"
