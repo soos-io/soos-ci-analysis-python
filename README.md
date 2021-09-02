@@ -84,12 +84,12 @@ SOOS_API_BASE_URL="https://api.soos.io/api/"
 
 
 # **************************** Modify Above Only ***************#
-mkdir -p "${WORKSPACE}/soos/workspace"
-cd "${WORKSPACE}/soos"
+#mkdir -p "${WORKSPACE}/soos/workspace"
+#cd "${WORKSPACE}/soos"
 
-curl -s $SOOS_LATEST_REPO | grep "browser_download_url" | cut -d '"' -f 4 | xargs -n 1 curl -LO
-sha256sum -c soos.sha256
-sha256sum -c requirements.sha256
+#curl -s $SOOS_LATEST_REPO | grep "browser_download_url" | cut -d '"' -f 4 | xargs -n 1 curl -LO
+#sha256sum -c soos.sha256
+#sha256sum -c requirements.sha256
 
 cd ${WORKSPACE}
 
