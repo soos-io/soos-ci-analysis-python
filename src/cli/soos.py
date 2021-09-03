@@ -1,7 +1,4 @@
 import requests
-#testing123
-#testingagain
-#testing
 import json
 from datetime import datetime
 import sys
@@ -28,7 +25,6 @@ class SOOSStructureAPIResponse:
         self.project_id = None
         self.analysis_id = None
         self.report_url = None
-        self.embed_url = None
         self.report_status_url = None
 
         if self.original_response is not None:
@@ -39,7 +35,6 @@ class SOOSStructureAPIResponse:
             self.project_id = self.content_object["projectId"]
             self.analysis_id = self.content_object["Id"]
             self.report_url = self.content_object["reportUrl"]
-            self.embed_url = self.content_object["embedUrl"]
             self.report_status_url = self.content_object["reportStatusUrl"]
 
 
@@ -1125,7 +1120,6 @@ if __name__ == "__main__":
                     "Analysis request is running, once completed, access the report using the links below"
                 )
                 SOOS.console_log("ReportUrl: " + structure_response.report_url)
-                SOOS.console_log("EmbedUrl: " + structure_response.embed_url)
                 #the break between analysis start and the result api
 
 
