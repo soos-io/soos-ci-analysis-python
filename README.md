@@ -14,7 +14,7 @@ server, using either synchronous or asynchronous mode.
 Our full list of supported manifest formats can be found here: https://kb.soos.io/help/soos-languages-supported
 
 ## Need an Account?
-**Visit [soos.io](https://app.soos.io/register) to create your free or trial account.**
+**Visit [soos.io](https://app.soos.io/register) to create your trial account.**
 
 ## Setup
 
@@ -173,3 +173,4 @@ https://www.soos.io/support
 ### Request an Integration or Package Manager
 https://www.soos.io/support
 
+1
