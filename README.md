@@ -164,5 +164,5 @@ Use the script example above, setting the `SOOS_MODE` parameter to *async_init*.
 If you care about the result or want to break the build when issues occur, add a second step close to the end of your build pipeline/steps to give the scan as much time as possible to complete. Use the script example above, setting the `SOOS_MODE` parameter to *async_result*.
 
 ## Feedback and Support
-### Knowledge Base and Support
+### Knowledge Base
 [Go To Knowledge Base](https://kb.soos.io/help)
