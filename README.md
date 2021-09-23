@@ -30,7 +30,7 @@ The script will always attempt to load a specific set of parameters from environ
 3. Exclude the *soos* directory from being scanned by passing in the `dte` parameter
     1. Set `dte="soos"`
 4. QuickStart Parameters
-```shell
+```bash
 -m="run_and_wait" 
 -of="fail_the_build" 
 -dte="soos" 
