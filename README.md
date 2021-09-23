@@ -103,7 +103,7 @@ python soos/soos.py -m="${SOOS_MODE}" -of="${SOOS_ON_FAILURE}" -dte="${SOOS_DIRS
 ```
 
 ### Full Windows CMD Script Example
-```batch
+```bat
 echo off
 :: run soos.py with the -h flag for help
 :: ARGS REQUIRING CUSTOMIZATION:
