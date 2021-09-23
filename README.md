@@ -1,17 +1,17 @@
 # SOOS Security Analysis: Python Script
 ## OSS Security for Everyone
-The SOOS Python Script is the most flexible way to run SOOS against your codebase to gain insights into your open source package risk. Run locally or on a CI/CD
+The **SOOS Python Script** is the most flexible way to run SOOS against your codebase to gain insights into your open source package risk. Run locally or on a CI/CD
 server, using either synchronous or asynchronous mode.
 
 ## Supported Languages and Package Managers
 
-*	Node (NPM)
-*	Python (pypi)
-*	.NET (NuGet)
-*	Ruby (Ruby Gems)
-*	Java (Maven)
+*	[Node (NPM)](https://www.npmjs.com/)
+*	[Python (pypi)](https://pypi.org/)
+*	[.NET (NuGet)](https://www.nuget.org/)
+*	[Ruby (Ruby Gems)](https://rubygems.org/)
+*	[Java (Maven)](https://maven.apache.org/)
 
-Our full list of supported manifest formats can be found here: https://kb.soos.io/help/soos-languages-supported
+Our full list of supported manifest formats can be found [here](https://kb.soos.io/help/soos-languages-supported).
 
 ## Need an Account?
 **Visit [soos.io](https://app.soos.io/register) to create your trial account.**
@@ -30,7 +30,7 @@ The script will always attempt to load a specific set of parameters from environ
 3. Exclude the *soos* directory from being scanned by passing in the `dte` parameter
     1. Set `dte="soos"`
 4. QuickStart Parameters
-```
+``` shell
 -m="run_and_wait" 
 -of="fail_the_build" 
 -dte="soos" 
@@ -55,7 +55,7 @@ The script will always attempt to load a specific set of parameters from environ
 - `akey` - (api key) your SOOS API key (not required if using the environment variable)
 
 ### Full Shell Script Example
-```
+``` shell
 # run soos.py with the -h flag for help
 # REQUIRED ARGS:
 SOOS_PROJECT_NAME="YOUR_PROJECT_NAME_HERE"
@@ -103,7 +103,7 @@ python soos/soos.py -m="${SOOS_MODE}" -of="${SOOS_ON_FAILURE}" -dte="${SOOS_DIRS
 ```
 
 ### Full Windows CMD Script Example
-```
+``` Shell
 echo off
 :: run soos.py with the -h flag for help
 :: ARGS REQUIRING CUSTOMIZATION:
@@ -158,19 +158,17 @@ You can run the script asynchronously by creating two script steps in your CI/CD
 The second step is optional if you don't care about the result in your CI/CD system.
 
 #### Start the Scan
-Use the script example above, setting the SOOS_MODE parameter to *async_init*. If you don't care about the scan result in your CI/CD pipeline, this is all you have to do!
+Use the script example above, setting the `SOOS_MODE` parameter to *async_init*. If you don't care about the scan result in your CI/CD pipeline, this is all you have to do!
 
 #### Wait for the Scan
-If you care about the result or want to break the build when issues occur, cadd a second step close to the end of your build pipeline/steps to give the scan as much time as possible to complete. Use the script example above, setting the SOOS_MODE parameter to *async_result*.
+If you care about the result or want to break the build when issues occur, add a second step close to the end of your build pipeline/steps to give the scan as much time as possible to complete. Use the script example above, setting the `SOOS_MODE` parameter to *async_result*.
 
 ## Feedback and Support
 ### Support and Defects
-https://www.soos.io/support
+[Get Support](https://kb.soos.io/help)
 
 ### Feature Requests
-https://www.soos.io/support
+[Request a Feature](https://kb.soos.io/help)
 
 ### Request an Integration or Package Manager
-https://www.soos.io/support
-
-1
+[Request an Integration or Package Manager](https://kb.soos.io/help)
