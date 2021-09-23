@@ -55,7 +55,7 @@ The script will always attempt to load a specific set of parameters from environ
 - `akey` - (api key) your SOOS API key (not required if using the environment variable)
 
 ### Full Shell Script Example
-``` shell
+```shell
 # run soos.py with the -h flag for help
 # REQUIRED ARGS:
 SOOS_PROJECT_NAME="YOUR_PROJECT_NAME_HERE"
@@ -103,7 +103,7 @@ python soos/soos.py -m="${SOOS_MODE}" -of="${SOOS_ON_FAILURE}" -dte="${SOOS_DIRS
 ```
 
 ### Full Windows CMD Script Example
-``` Batch
+```batch
 echo off
 :: run soos.py with the -h flag for help
 :: ARGS REQUIRING CUSTOMIZATION:
