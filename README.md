@@ -30,7 +30,7 @@ The script will always attempt to load a specific set of parameters from environ
 3. Exclude the *soos* directory from being scanned by passing in the `dte` parameter
     1. Set `dte="soos"`
 4. QuickStart Parameters
-``` shell
+```shell
 -m="run_and_wait" 
 -of="fail_the_build" 
 -dte="soos" 
@@ -55,7 +55,7 @@ The script will always attempt to load a specific set of parameters from environ
 - `akey` - (api key) your SOOS API key (not required if using the environment variable)
 
 ### Full Shell Script Example
-```shell
+```bash
 # run soos.py with the -h flag for help
 # REQUIRED ARGS:
 SOOS_PROJECT_NAME="YOUR_PROJECT_NAME_HERE"
