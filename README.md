@@ -143,8 +143,8 @@ cd "%ROOT%"
 python -m venv .
 
 cd "%WORKSPACE"
-curl -LO https://github.com/soos-io/soos-ci-analysis-python/releases/download/latest/requirements.txt
-curl -LO https://github.com/soos-io/soos-ci-analysis-python/releases/download/latest/soos.py
+curl -LJO https://github.com/soos-io/soos-ci-analysis-python/releases/latest/download/soos.py -o soos.py
+curl -LJO https://github.com/soos-io/soos-ci-analysis-python/releases/latest/download/requirements.txt -o requirements.txt
 
 pip3 install -r "%CD%/requirements.txt" 
 
