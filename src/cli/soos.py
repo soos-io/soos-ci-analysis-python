@@ -505,7 +505,7 @@ class SOOS:
 
                         manifest_label = immediate_parent_folder
 
-                        with open(file_name, 'r') as the_file:
+                        with open(file_name, mode='r', encoding="utf-8") as the_file:
 
                             content = the_file.read()
                             #print("Here is the content", content)
@@ -1174,7 +1174,7 @@ if __name__ == "__main__":
         # Sit and wait for ASYNC RESULT
 
         try:
-            with open(soos.script.async_result_file, 'r') as the_file:
+            with open(soos.script.async_result_file, mode='r', encoding="utf-8") as the_file:
                 async_result_content = the_file.read()
                 async_result_values = json.loads(async_result_content)
                 soos.console_log("Getting Analysis Result For: " + async_result_values["report_status_url"])
