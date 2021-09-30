@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     # The type of runner that the job will run on
-    name: "Tagged Release"
+    name: "Tagged Pre Release"
     runs-on: ubuntu-latest
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -19,7 +19,7 @@ jobs:
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
+          prerelease: true
           files: |
             src/cli/requirements.txt
             src/cli/soos.py
