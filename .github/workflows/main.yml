@@ -19,7 +19,8 @@ jobs:
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: true
+          draft: true
+          prerelease: false
           files: |
             src/cli/requirements.txt
             src/cli/soos.py
