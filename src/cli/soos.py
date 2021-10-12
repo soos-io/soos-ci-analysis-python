@@ -9,13 +9,13 @@ import time
 import urllib.parse
 import platform
 
-from pathlib import Path  # User Home Folder references
+from pathlib import Path, PurePath  # User Home Folder references
 import requests
+
 
 class SOOSStructureAPIResponse:
 
     def __init__(self, structure_response):
-
         self.original_response = structure_response
 
         self.content_object = None
@@ -28,7 +28,6 @@ class SOOSStructureAPIResponse:
         self.report_status_url = None
 
         if self.original_response is not None:
-
             self.content_object = json.loads(self.original_response.content)
 
             self.structure_id = self.content_object["Id"]
@@ -40,7 +39,6 @@ class SOOSStructureAPIResponse:
 
 
 class SOOSStructureAPI:
-
     API_RETRY_COUNT = 3
 
     URI_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/analysis/structure"
@@ -93,10 +91,10 @@ class SOOSStructureAPI:
         for i in range(0, SOOSStructureAPI.API_RETRY_COUNT):
             try:
                 kernel = requests.post(
-                        url=api_url,
-                        data=json.dumps(structure_api_data),
-                        #files=structure_api_data,
-                        headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'})
+                    url=api_url,
+                    data=json.dumps(structure_api_data),
+                    # files=structure_api_data,
+                    headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'})
 
                 if kernel.status_code > 500:
                     #
@@ -108,15 +106,14 @@ class SOOSStructureAPI:
                 else:
                     api_response = SOOSStructureAPIResponse(kernel)
 
-
                 break
 
             except Exception as e:
                 SOOS.console_log("A Structure API Exception Occurred. "
-                      "Attempt " + str(i + 1) + " of " + str(SOOSStructureAPI.API_RETRY_COUNT) + "::" +
-                      "Data: " + str(structure_api_data) + "::" +
-                      "Exception: " + str(e)
-                )
+                                 "Attempt " + str(i + 1) + " of " + str(SOOSStructureAPI.API_RETRY_COUNT) + "::" +
+                                 "Data: " + str(structure_api_data) + "::" +
+                                 "Exception: " + str(e)
+                                 )
 
         return api_response
 
@@ -162,7 +159,6 @@ class SOOSContext:
             self.load_from_parameters(args)
 
             if not self.is_valid():
-
                 return False
 
         return True
@@ -315,15 +311,16 @@ class SOOSContext:
 
         if self.client_id is None or len(self.client_id) == 0:
             SOOS.console_log("REQUIRED PARAMETER IS MISSING: SOOS_CLIENT_ID")
-            SOOS.console_log("CLIENT_ID, if you do not already have one, will be provided with a subscription to SOOS.io services.")
+            SOOS.console_log(
+                "CLIENT_ID, if you do not already have one, will be provided with a subscription to SOOS.io services.")
 
         if self.api_key is None or len(self.api_key) == 0:
             SOOS.console_log("REQUIRED PARAMETER IS MISSING: SOOS_API_KEY")
-            SOOS.console_log("API_KEY, if you do not already have one, will be provided with a subscription to SOOS.io services.")
+            SOOS.console_log(
+                "API_KEY, if you do not already have one, will be provided with a subscription to SOOS.io services.")
 
 
 class SOOSManifestAPI:
-
     API_RETRY_COUNT = 3
 
     URI_TEMPLATE = "{soos_base_uri}" \
@@ -353,7 +350,6 @@ class SOOSManifestAPI:
         return api_url
 
     @staticmethod
-
     def exec(soos_context, project_id, analysis_id, manifest_label, manifest_name, manifest_content):
 
         manifest_name = manifest_name.replace(".", "*")
@@ -368,13 +364,13 @@ class SOOSManifestAPI:
         for i in range(0, SOOSManifestAPI.API_RETRY_COUNT):
             try:
                 SOOS.console_log("*** Putting manifest: " + manifest_name + " :: to: " + api_url)
-               #manifest_content is class str, convert to dict
+                # manifest_content is class str, convert to dict
                 response = requests.put(
                     url=api_url,
                     files=dict(manifest=manifest_content),
                     headers={'x-soos-apikey': soos.context.api_key,
-                            'Content_type': 'multipart/form-data'
-                    }
+                             'Content_type': 'multipart/form-data'
+                             }
                 )
 
                 SOOS.console_log("Manifest Put Executed: " + manifest_name)
@@ -382,13 +378,12 @@ class SOOSManifestAPI:
 
             except Exception as e:
                 SOOS.console_log("Manifest API Exception Occurred. "
-                      "Attempt " + str(i + 1) + " of " + str(SOOSManifestAPI.API_RETRY_COUNT))
+                                 "Attempt " + str(i + 1) + " of " + str(SOOSManifestAPI.API_RETRY_COUNT))
 
         return response
 
 
 class SOOS:
-
 
     def __init__(self):
         self.context = SOOSContext()
@@ -425,7 +420,6 @@ class SOOS:
 
         MANIFEST_FILES = self.load_manifest_types()
 
-
         for manifest_file in MANIFEST_FILES:
             files = []
             package_manager = manifest_file['packageManager']
@@ -433,7 +427,7 @@ class SOOS:
 
             for entries in manifest_file["manifests"]:
                 pattern = entries["pattern"]
-                candidate_files = self.find_manifest_files(pattern = pattern)
+                candidate_files = self.find_manifest_files(pattern=pattern)
 
                 for cf in candidate_files:
                     files.append(cf)
@@ -447,7 +441,7 @@ class SOOS:
                 immediate_parent_folder = ""
 
                 for exclude_dir in dirs_to_exclude:
-                     # Directories to Exclude
+                    # Directories to Exclude
                     if exclude_dir in pure_directory:
                         # skip this manifest
 
@@ -470,7 +464,7 @@ class SOOS:
                         full_file_path += "\\" + pure_filename
 
                 for exclude_file in files_to_exclude:
-                     # Files to Exclude
+                    # Files to Exclude
                     if exclude_file in pure_filename:
                         # skip this manifest
 
@@ -483,7 +477,6 @@ class SOOS:
                     # log the manifest
 
                     SOOS.console_log("Found manifest file: " + file_name)
-
 
                     # call the api with the manifest file content as the body
 
@@ -508,9 +501,7 @@ class SOOS:
                         with open(file_name, mode='r', encoding="utf-8") as the_file:
 
                             content = the_file.read()
-                            #print("Here is the content", content)
                             if len(content.strip()) > 0:
-
 
                                 response = SOOSManifestAPI.exec(
                                     soos_context=soos.context,
@@ -525,11 +516,13 @@ class SOOS:
 
                                     manifest_message = response.json()["message"]
                                     manifest_code = response.json()["code"]
-                                    SOOS.console_log(f"MANIFEST API STATUS: {response.status_code} || {manifest_code} =====> {manifest_message}")
+                                    SOOS.console_log(
+                                        f"MANIFEST API STATUS: {response.status_code} || {manifest_code} =====> {manifest_message}")
                                     print()
                                     manifests_found_count += 1
                                 else:
-                                    SOOS.console_log("There was some error with the Manifest API. For more information, please visit https://soos.io/support")
+                                    SOOS.console_log(
+                                        "There was some error with the Manifest API. For more information, please visit https://soos.io/support")
                                     print()
                                     manifests_found_count += 1
 
@@ -539,8 +532,6 @@ class SOOS:
 
                     except Exception as e:
                         SOOS.console_log("Could not send manifest: " + file_name + " due to error: " + str(e))
-
-
 
         return manifests_found_count
 
@@ -567,7 +558,7 @@ class SOOS:
 
     @staticmethod
     def console_log(message):
-        time_now = datetime.utcnow().isoformat(timespec = "seconds", sep = " ")
+        time_now = datetime.utcnow().isoformat(timespec="seconds", sep=" ")
 
         print(time_now + " SOOS: " + message)
 
@@ -634,13 +625,13 @@ class SOOS:
                 if "message" in response.json():
                     results_error_code = response.json()["code"]
                     results_error_message = response.json()["message"]
-                    SOOS.console_log("Analysis Results API Status Code:" + str(results_error_code) + results_error_message)
+                    SOOS.console_log(
+                        "Analysis Results API Status Code:" + str(results_error_code) + results_error_message)
                     SOOS.console_log("------------------------")
                     sys.exit(1)
 
 
 class SOOSAnalysisStartAPI:
-
     API_RETRY_COUNT = 3
 
     URI_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/projects/{soos_project_id}/analysis/{soos_analysis_id}"
@@ -671,21 +662,20 @@ class SOOSAnalysisStartAPI:
                     url=url,
                     data="{}",
                     headers={'x-soos-apikey': soos_context.api_key,
-                            'content-length': str(0),
-                            'Content-Type': 'multipart/form-data'}
+                             'content-length': str(0),
+                             'Content-Type': 'multipart/form-data'}
                 )
 
                 break
 
             except Exception as e:
                 SOOS.console_log("Analysis Start API Exception Occurred. "
-                      "Attempt " + str(i + 1) + " of " + str(SOOSAnalysisStartAPI.API_RETRY_COUNT))
+                                 "Attempt " + str(i + 1) + " of " + str(SOOSAnalysisStartAPI.API_RETRY_COUNT))
 
         return response
 
 
 class SOOSAnalysisResultAPI:
-
     API_RETRY_COUNT = 3
 
     def __init__(self):
@@ -709,27 +699,24 @@ class SOOSAnalysisResultAPI:
             except Exception as e:
                 SOOS.console_log(
                     "Analysis Result API Exception Occurred. "
-                      "Attempt " + str(i + 1) + " of " + str(SOOSAnalysisResultAPI.API_RETRY_COUNT)
+                    "Attempt " + str(i + 1) + " of " + str(SOOSAnalysisResultAPI.API_RETRY_COUNT)
                 )
 
         return response
 
 
 class SOOSOnFailure:
-
     FAIL_THE_BUILD = "fail_the_build"
     CONTINUE_ON_FAILURE = "continue_on_failure"
 
 
 class SOOSModeOfOperation:
-
     RUN_AND_WAIT = "run_and_wait"
     ASYNC_INIT = "async_init"
     ASYNC_RESULT = "async_result"
 
 
 class SOOSAnalysisScript:
-
     MIN_ANALYSIS_RESULT_POLLING_INTERVAL = 10
     ASYNC_RESULT_FILE_NAME = "soos_async.json"
     SOOS_WORKSPACE_FOLDER = "soos/workspace"
@@ -751,6 +738,33 @@ class SOOSAnalysisScript:
         self.analysis_result_max_wait = None
         self.analysis_result_polling_interval = None
 
+    def __set_working_dir_and_async_result_file__(self, working_directory):
+        """
+        This method receives the working_directory passed as script argument.
+        It is used to set the working_directory and async_result_file properties from SOOSAnalysisScript class.
+        """
+        if working_directory is not None:
+            working_dir_path = Path(working_directory)
+            if not working_dir_path.is_dir() or not working_dir_path.exists():
+                SOOS.console_log('ERROR: The working directory does not exist or it is not a directory')
+                sys.exit(1)
+
+            if working_directory.startwith("~/") or working_directory.find("%userprofile%"):
+                self.working_directory = str(working_dir_path.expanduser().resolve())
+            else:
+                self.working_directory = str(working_dir_path.resolve())
+
+            async_result_file_path = PurePath.joinpath(working_dir_path,
+                                                       SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER,
+                                                       SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME).resolve()
+        else:
+            # FAllBACK - COULD RESULT IN ERROR DEPENDING ON MODE DESIRED
+            self.working_directory = ""
+            async_result_file_path = PurePath.joinpath(Path(self.code_root),
+                                                       SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME).resolve()
+
+        self.async_result_file = str(async_result_file_path)
+
     def load_script_arguments(self):
 
         if args.mode is not None:
@@ -767,7 +781,6 @@ class SOOSAnalysisScript:
 
         SOOS.console_log("ON_FAILURE: " + self.on_failure)
 
-
         self.directories_to_exclude = ["node_modules"]
 
         temp_dirs_to_exclude = []
@@ -781,7 +794,6 @@ class SOOSAnalysisScript:
             SOOS.console_log("DIRS_TO_EXCLUDE: <NONE>")
 
         self.files_to_exclude = []
-        temp_files_to_exclude = []
         if args.files_to_exclude is not None and len(args.files_to_exclude.strip()) > 0:
             SOOS.console_log("FILES_TO_EXCLUDE: " + args.files_to_exclude.strip())
             temp_files_to_exclude = args.files_to_exclude.split(",")
@@ -792,48 +804,49 @@ class SOOSAnalysisScript:
             SOOS.console_log("FILES_TO_EXCLUDE: <NONE>")
 
         # WORKING DIRECTORY & ASYNC RESUlT FILE
-        if args.working_directory is not None:
-            self.working_directory = args.working_directory.strip()
-            if len(self.working_directory) > 0:
-
-                # IS THIS LINUX OR WINDOWS?
-                if self.working_directory.find("/") >= 0:
-
-                    # Convert references to user home folder to absolute path
-                    if self.working_directory.startswith("~/"):
-                        home = str(Path.home())
-
-                        if home.endswith("/"):
-                            self.working_directory = home + self.working_directory[2:]
-                        else:
-                            self.working_directory = home + "/" + self.working_directory[2:]
-
-                    if not self.working_directory.endswith("/"):
-                        self.async_result_file = self.working_directory + "/" + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "/" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
-                    else:
-                        self.async_result_file = self.working_directory + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "/" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
-                else:
-                    if not self.working_directory.endswith("\\"):
-                        self.async_result_file = self.working_directory + "\\" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
-
-                    # Convert references to user home folder to absolute path
-                    if self.working_directory.find("%userprofile%") >= 0:
-                        home = str(Path.home())
-
-                        if home.endswith("\\"):
-                            self.working_directory = home + self.working_directory[2:]
-                        else:
-                            self.working_directory = home + "\\" + self.working_directory[2:]
-
-                    if not self.working_directory.endswith("\\"):
-                        self.async_result_file = self.working_directory + "\\" + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "\\" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
-                    else:
-                        self.async_result_file = self.working_directory + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "\\" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
-
-        else:
-            # FAllBACK - COULD RESULT IN ERROR DEPENDING ON MODE DESIRED
-            self.working_directory = ""
-            self.async_result_file = self.code_root + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
+        self.__set_working_dir_and_async_result_file__(args.working_directory)
+        # if args.working_directory is not None:
+        #     self.working_directory = args.working_directory.strip()
+        #     if len(self.working_directory) > 0:
+        #
+        #         # IS THIS LINUX OR WINDOWS?
+        #         if self.working_directory.find("/") >= 0:
+        #
+        #             # Convert references to user home folder to absolute path
+        #             if self.working_directory.startswith("~/"):
+        #                 home = str(Path.home())
+        #
+        #                 if home.endswith("/"):
+        #                     self.working_directory = home + self.working_directory[2:]
+        #                 else:
+        #                     self.working_directory = home + "/" + self.working_directory[2:]
+        #
+        #             if not self.working_directory.endswith("/"):
+        #                 self.async_result_file = self.working_directory + "/" + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "/" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
+        #             else:
+        #                 self.async_result_file = self.working_directory + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "/" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
+        #         else:
+        #             if not self.working_directory.endswith("\\"):
+        #                 self.async_result_file = self.working_directory + "\\" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
+        #
+        #             # Convert references to user home folder to absolute path
+        #             if self.working_directory.find("%userprofile%") >= 0:
+        #                 home = str(Path.home())
+        #
+        #                 if home.endswith("\\"):
+        #                     self.working_directory = home + self.working_directory[2:]
+        #                 else:
+        #                     self.working_directory = home + "\\" + self.working_directory[2:]
+        #
+        #             if not self.working_directory.endswith("\\"):
+        #                 self.async_result_file = self.working_directory + "\\" + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "\\" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
+        #             else:
+        #                 self.async_result_file = self.working_directory + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "\\" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
+        #
+        # else:
+        #     # FAllBACK - COULD RESULT IN ERROR DEPENDING ON MODE DESIRED
+        #     self.working_directory = ""
+        #     self.async_result_file = self.code_root + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
 
         SOOS.console_log("WORKING_DIRECTORY: " + self.working_directory)
         SOOS.console_log("ASYNC_RESULT_FILE: " + self.async_result_file)
@@ -842,7 +855,7 @@ class SOOSAnalysisScript:
         # Default: 300 (5 minutes)
         # Minimum: Any
         # Maximum: Unlimited
-        analysis_result_max_wait = 5 * 60
+        self.analysis_result_max_wait = 5 * 60
         if args.analysis_result_max_wait is not None:
             self.analysis_result_max_wait = int(args.analysis_result_max_wait)
 
@@ -1018,12 +1031,10 @@ class SOOSAnalysisScript:
 
 if __name__ == "__main__":
 
-    #if ((3, 0) <= sys.version_info <= (3, 9)):
+    # if ((3, 0) <= sys.version_info <= (3, 9)):
     if sys.version_info < (3, 6):
         print("**** SOOS FATAL ERROR: Python Version 3.6 or higher is required ****")
         sys.exit(1)
-
-
 
     # Initialize SOOS
     soos = SOOS()
@@ -1037,11 +1048,10 @@ if __name__ == "__main__":
     soos.context.load(args)
     MANIFEST_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/manifests"
 
-
     if not soos.context.load(args):
 
         SOOS.console_log("Could not find required Environment/Script Variables. "
-                          "One or more are missing or empty:")
+                         "One or more are missing or empty:")
 
         soos.context.print_invalid()
 
@@ -1051,7 +1061,7 @@ if __name__ == "__main__":
             sys.exit(0)
 
     # Ensure Working Directory is present if mode is ASYNC
-    if soos.script.mode in(SOOSModeOfOperation.ASYNC_INIT, SOOSModeOfOperation.ASYNC_RESULT):
+    if soos.script.mode in (SOOSModeOfOperation.ASYNC_INIT, SOOSModeOfOperation.ASYNC_RESULT):
         if len(soos.script.working_directory) == 0:
             SOOS.console_log("Working Directory is required when mode is ASYNC. Exiting.")
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
@@ -1078,12 +1088,10 @@ if __name__ == "__main__":
                 structure_message = structure_response.original_response.json()["message"]
                 SOOS.console_log(f"STRUCTURE API STATUS: {structure_code} =====> {structure_message} {more_info}")
                 sys.exit(1)
-            #fallback in case the if clause doesnt work but there really is a > 299 response that deserves message.
+            # fallback in case the if clause doesnt work but there really is a > 299 response that deserves message.
             else:
                 SOOS.console_log("A Structure API error occurred: Could not execute API." + more_info)
                 sys.exit(1)
-
-
 
         # ## STRUCTURE API CALL SUCCESSFUL - CONTINUE
 
@@ -1092,7 +1100,7 @@ if __name__ == "__main__":
         SOOS.console_log("------------------------")
         SOOS.console_log("Analysis Id: " + structure_response.analysis_id)
         SOOS.console_log("Project Id:  " + structure_response.project_id)
-        #Now get ready to send your manifests out for Start Analysis API
+        # Now get ready to send your manifests out for Start Analysis API
 
         manifests_found_count = soos.send_manifests(
             structure_response.project_id,
@@ -1123,12 +1131,11 @@ if __name__ == "__main__":
 
                 else:
                     print()
-                    SOOS.console_log("Analysis request is running, once completed, access the report using the links below")
+                    SOOS.console_log(
+                        "Analysis request is running, once completed, access the report using the links below")
                     print()
                     SOOS.console_log("ReportUrl: " + structure_response.report_url)
                     print()
-
-
 
                 if soos.script.mode == SOOSModeOfOperation.RUN_AND_WAIT:
 
@@ -1160,9 +1167,10 @@ if __name__ == "__main__":
                     sys.exit(1)
                 else:
                     sys.exit(0)
-        else:   #so the number of manifests is NOT > 0 OR there is an outage
+        else:  # so the number of manifests is NOT > 0 OR there is an outage
 
-            SOOS.console_log("Sorry, we could not locate any manifests under " + soos.context.source_code_path + "  Please check your files and try again.")
+            SOOS.console_log(
+                "Sorry, we could not locate any manifests under " + soos.context.source_code_path + "  Please check your files and try again.")
             SOOS.console_log("For more help, please visit https://soos.io/support")
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
