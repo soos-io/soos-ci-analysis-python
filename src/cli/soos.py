@@ -139,6 +139,33 @@ class SOOSContext:
         # INTENTIONALLY HARDCODED
         self.integration_type = "CI"
 
+    def __set_source_code_path__(self, source_code_directory):
+        """
+        This method receives the working_directory passed as script argument.
+        It is used to set the working_directory and async_result_file properties from SOOSAnalysisScript class.
+        """
+        plt = platform.system().lower()
+        if plt == 'windows':
+            path_resolver = WindowsPath
+        else:
+            path_resolver = Path
+        if source_code_directory is not None:
+            source_dir_path = path_resolver(source_code_directory)
+            if not source_dir_path.is_dir() or not source_dir_path.exists():
+                SOOS.console_log('ERROR: The source code directory does not exist or it is not a directory')
+                sys.exit(1)
+
+            if source_code_directory.startswith("~/") or \
+                    source_code_directory.startswith("$HOME/") or \
+                    source_code_directory.find("%userprofile%/"):
+                self.source_code_path = str(source_dir_path.expanduser().resolve())
+            else:
+                self.source_code_path = str(source_dir_path.resolve())
+
+        else:
+            # FAllBACK - COULD RESULT IN ERROR DEPENDING ON MODE DESIRED
+            self.source_code_path = SOOS.get_current_directory()
+
     def reset(self):
         self.base_uri = None
         self.source_code_path = None
@@ -176,7 +203,7 @@ class SOOSContext:
 
         try:
             if self.source_code_path is None:
-                self.source_code_path = os.environ['SOOS_ROOT_CODE_PATH']
+                self.__set_source_code_path__(os.environ['SOOS_ROOT_CODE_PATH'])
                 SOOS.console_log("SOOS_ROOT_CODE_PATH Environment Variable Loaded: " + self.source_code_path)
         except Exception as e:
             pass
@@ -219,7 +246,7 @@ class SOOSContext:
             SOOS.console_log("SOOS_API_BASE_URI Parameter Loaded: " + self.base_uri)
 
         if args.source_code_path is not None:
-            self.source_code_path = str(args.source_code_path)
+            self.__set_source_code_path__(str(args.source_code_path))
             SOOS.console_log("SOOS_ROOT_CODE_PATH Parameter Loaded: " + self.source_code_path)
 
         if args.project_name is not None:
