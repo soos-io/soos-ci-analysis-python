@@ -141,8 +141,8 @@ class SOOSContext:
 
     def __set_source_code_path__(self, source_code_directory):
         """
-        This method receives the working_directory passed as script argument.
-        It is used to set the working_directory and async_result_file properties from SOOSAnalysisScript class.
+        This method receives the source code path passed as argument or env variable.
+        It is used to set the source_code_path property from SOOSContext class.
         """
         plt = platform.system().lower()
         if plt == 'windows':
@@ -426,7 +426,7 @@ class SOOS:
             url=murl,
             headers={'x-soos-apikey': self.context.api_key, 'Content-Type': 'application/json'}
         )
-        m = json.loads(my_manifests.content)
+        m = json.loads(my_Fmanifests.content)
         return m
 
     def find_manifest_files(self, pattern):
