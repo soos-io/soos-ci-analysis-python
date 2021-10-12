@@ -749,7 +749,9 @@ class SOOSAnalysisScript:
                 SOOS.console_log('ERROR: The working directory does not exist or it is not a directory')
                 sys.exit(1)
 
-            if working_directory.startwith("~/") or working_directory.find("%userprofile%"):
+            if working_directory.startswith("~/") or \
+                    working_directory.startswith("$HOME/") or \
+                    working_directory.find("%userprofile%/"):
                 self.working_directory = str(working_dir_path.expanduser().resolve())
             else:
                 self.working_directory = str(working_dir_path.resolve())
@@ -805,48 +807,6 @@ class SOOSAnalysisScript:
 
         # WORKING DIRECTORY & ASYNC RESUlT FILE
         self.__set_working_dir_and_async_result_file__(args.working_directory)
-        # if args.working_directory is not None:
-        #     self.working_directory = args.working_directory.strip()
-        #     if len(self.working_directory) > 0:
-        #
-        #         # IS THIS LINUX OR WINDOWS?
-        #         if self.working_directory.find("/") >= 0:
-        #
-        #             # Convert references to user home folder to absolute path
-        #             if self.working_directory.startswith("~/"):
-        #                 home = str(Path.home())
-        #
-        #                 if home.endswith("/"):
-        #                     self.working_directory = home + self.working_directory[2:]
-        #                 else:
-        #                     self.working_directory = home + "/" + self.working_directory[2:]
-        #
-        #             if not self.working_directory.endswith("/"):
-        #                 self.async_result_file = self.working_directory + "/" + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "/" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
-        #             else:
-        #                 self.async_result_file = self.working_directory + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "/" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
-        #         else:
-        #             if not self.working_directory.endswith("\\"):
-        #                 self.async_result_file = self.working_directory + "\\" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
-        #
-        #             # Convert references to user home folder to absolute path
-        #             if self.working_directory.find("%userprofile%") >= 0:
-        #                 home = str(Path.home())
-        #
-        #                 if home.endswith("\\"):
-        #                     self.working_directory = home + self.working_directory[2:]
-        #                 else:
-        #                     self.working_directory = home + "\\" + self.working_directory[2:]
-        #
-        #             if not self.working_directory.endswith("\\"):
-        #                 self.async_result_file = self.working_directory + "\\" + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "\\" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
-        #             else:
-        #                 self.async_result_file = self.working_directory + SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER + "\\" + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
-        #
-        # else:
-        #     # FAllBACK - COULD RESULT IN ERROR DEPENDING ON MODE DESIRED
-        #     self.working_directory = ""
-        #     self.async_result_file = self.code_root + SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME
 
         SOOS.console_log("WORKING_DIRECTORY: " + self.working_directory)
         SOOS.console_log("ASYNC_RESULT_FILE: " + self.async_result_file)
