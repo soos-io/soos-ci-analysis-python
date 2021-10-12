@@ -107,16 +107,19 @@ python soos/soos.py -m="${SOOS_MODE}" -of="${SOOS_ON_FAILURE}" -dte="${SOOS_DIRS
 echo off
 :: run soos.py with the -h flag for help
 :: ARGS REQUIRING CUSTOMIZATION:
-set "SOOS_PROJECT_NAME=YOUR_PROJECT_NAME_HERE"
+:: SOOS_CLIENT_ID and SOOS_API_KEY must be defined as Environment variables. You can get these values from SOOS Application
+set "SOOS_PROJECT_NAME=<Project Name>" :: ENTER PROJECT NAME
+set "SOOS_LATEST_REPO=https://github.com/soos-io/soos-ci-analysis-python/releases/latest/download"
 
 :: ARGS WHERE CUSTOMIZATION IS OPTIONAL:
+set "SOURCE_CODE_PATH=<Source Code Main Directory>" :: ENTER SOURCE CODE MAIN DIRECTORY
 set "SOOS_MODE=run_and_wait"
 set "SOOS_ON_FAILURE=fail_the_build"
 set "SOOS_DIRS_TO_EXCLUDE=soos"
 set "SOOS_FILES_TO_EXCLUDE="
 set "SOOS_ANALYSIS_RESULT_MAX_WAIT=300"
 set "SOOS_ANALYSIS_RESULT_POLLING_INTERVAL=10"
-set "SOOS_CHECKOUT_DIR=../"
+set "SOOS_CHECKOUT_DIR=./"
 
 :: ARGS WHERE CUSTOMIZATION IS OPTIONAL, BUT UNLIKELY:
 set "SOOS_API_BASE_URL=https://api.soos.io/api/"
@@ -132,24 +135,26 @@ set "SOOS_INTEGRATION_NAME=Script"
 
 :: **************************** Modify Above Only *************** ::
 
-set "ROOT=%CD%/soos"
+set "ROOT=%SOURCE_CODE_PATH%/soos"
 set "WORKSPACE=%ROOT%/workspace"
 mkdir "%WORKSPACE%"
 
-set "ROOT=%CD%/soos"
-set "WORKSPACE=%ROOT%/workspace"
+cd "%WORKSPACE%"
+
+curl -LJO "%SOOS_LATEST_REPO%/soos.py" -o "%WORKSPACE%/soos.py"
+curl -LJO "%SOOS_LATEST_REPO%/requirements.txt" -o "%WORKSPACE%/requirements.txt"
 
 cd "%ROOT%"
+
 python -m venv .
+cd Scripts
+call activate.bat
 
-cd "%WORKSPACE"
-curl -LJO https://github.com/soos-io/soos-ci-analysis-python/releases/latest/download/soos.py -o soos.py
-curl -LJO https://github.com/soos-io/soos-ci-analysis-python/releases/latest/download/requirements.txt -o requirements.txt
+cd "%SOURCE_CODE_PATH%"
 
-pip3 install -r "%CD%/requirements.txt" 
+pip3 install -r "%WORKSPACE%/requirements.txt"
 
-python soos.py -m="%SOOS_MODE%" -of="%SOOS_ON_FAILURE%" -dte="%SOOS_DIRS_TO_EXCLUDE%" -fte="%SOOS_FILES_TO_EXCLUDE%" -wd="%SOOS_CHECKOUT_DIR%" -armw=%SOOS_ANALYSIS_RESULT_MAX_WAIT% -arpi=%SOOS_ANALYSIS_RESULT_POLLING_INTERVAL% -buri="%SOOS_API_BASE_URL%" -scp="%SOOS_CHECKOUT_DIR%" -pn="%SOOS_PROJECT_NAME%" -ch="%SOOS_COMMIT_HASH%" -bn="%SOOS_BRANCH_NAME%" -bruri="%SOOS_BRANCH_URI%" -bldver="%SOOS_BUILD_VERSION%" -blduri="%SOOS_BUILD_URI%" -oe="%SOOS_OPERATING_ENVIRONMENT%" -intn="%SOOS_INTEGRATION_NAME%"
-
+python "%WORKSPACE%/soos.py" -m="%SOOS_MODE%" -of="%SOOS_ON_FAILURE%" -dte="%SOOS_DIRS_TO_EXCLUDE%" -fte="%SOOS_FILES_TO_EXCLUDE%" -wd="%SOOS_CHECKOUT_DIR%" -armw=%SOOS_ANALYSIS_RESULT_MAX_WAIT% -arpi=%SOOS_ANALYSIS_RESULT_POLLING_INTERVAL% -buri="%SOOS_API_BASE_URL%" -scp="%SOOS_CHECKOUT_DIR%" -pn="%SOOS_PROJECT_NAME%" -ch="%SOOS_COMMIT_HASH%" -bn="%SOOS_BRANCH_NAME%" -bruri="%SOOS_BRANCH_URI%" -bldver="%SOOS_BUILD_VERSION%" -blduri="%SOOS_BUILD_URI%" -oe="%SOOS_OPERATING_ENVIRONMENT%" -intn="%SOOS_INTEGRATION_NAME%"
 
 ```
 
