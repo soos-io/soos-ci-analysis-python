@@ -9,7 +9,7 @@ import time
 import urllib.parse
 import platform
 
-from pathlib import Path, PurePath  # User Home Folder references
+from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
 import requests
 
 
@@ -396,9 +396,9 @@ class SOOS:
         murl = murl.replace("{soos_base_uri}", self.context.base_uri)
         murl = murl.replace("{soos_client_id}", self.context.client_id)
         my_manifests = requests.get(
-                    url=murl,
-                    headers={'x-soos-apikey': self.context.api_key, 'Content-Type': 'application/json'}
-                )
+            url=murl,
+            headers={'x-soos-apikey': self.context.api_key, 'Content-Type': 'application/json'}
+        )
         m = json.loads(my_manifests.content)
         return m
 
@@ -492,8 +492,8 @@ class SOOS:
                         except Exception as e:
 
                             SOOS.console_log("Exception attempting to get immediate parent folder :: " + str(e) + "::" +
-                                "Result: Setting immediate parent folder to <blank string>"
-                            )
+                                             "Result: Setting immediate parent folder to <blank string>"
+                                             )
                             pass
 
                         manifest_label = immediate_parent_folder
@@ -743,8 +743,15 @@ class SOOSAnalysisScript:
         This method receives the working_directory passed as script argument.
         It is used to set the working_directory and async_result_file properties from SOOSAnalysisScript class.
         """
+        plt = platform.system().lower()
+        if plt == 'windows':
+            path_resolver = WindowsPath
+            pure_path_resolver = PureWindowsPath
+        else:
+            path_resolver = Path
+            pure_path_resolver = PurePath
         if working_directory is not None:
-            working_dir_path = Path(working_directory)
+            working_dir_path = path_resolver(working_directory)
             if not working_dir_path.is_dir() or not working_dir_path.exists():
                 SOOS.console_log('ERROR: The working directory does not exist or it is not a directory')
                 sys.exit(1)
@@ -756,14 +763,14 @@ class SOOSAnalysisScript:
             else:
                 self.working_directory = str(working_dir_path.resolve())
 
-            async_result_file_path = PurePath.joinpath(working_dir_path,
-                                                       SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER,
-                                                       SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME).resolve()
+            async_result_file_path = pure_path_resolver.joinpath(working_dir_path,
+                                                                 SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER,
+                                                                 SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME).resolve()
         else:
             # FAllBACK - COULD RESULT IN ERROR DEPENDING ON MODE DESIRED
             self.working_directory = ""
-            async_result_file_path = PurePath.joinpath(Path(self.code_root),
-                                                       SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME).resolve()
+            async_result_file_path = pure_path_resolver.joinpath(path_resolver(self.code_root),
+                                                                 SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME).resolve()
 
         self.async_result_file = str(async_result_file_path)
 
