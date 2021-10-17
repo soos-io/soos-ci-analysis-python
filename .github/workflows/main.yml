@@ -16,9 +16,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: shasum python script
-        run: shasum -a 256 src/cli/soos.py > src/cli/soos.py.sha256
+        run: shasum -a 256 src/cli/soos.py > src/cli/soos.sha256
       - name: shasum requirements
-        run: shasum -a 256 src/cli/requirements.txt > src/cli/requirements.txt.sha256
+        run: shasum -a 256 src/cli/requirements.txt > src/cli/requirements.sha256
       # Runs a single command using the runners shell
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -27,6 +27,6 @@ jobs:
           prerelease: false
           files: |
             src/cli/requirements.txt
-            src/cli/requirements.txt.sha256
+            src/cli/requirements.sha256
             src/cli/soos.py
-            src/cli/soos.py.sha256
+            src/cli/soos.sha256
