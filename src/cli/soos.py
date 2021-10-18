@@ -62,7 +62,7 @@ class SOOSStructureAPI:
         api_response = None
 
         structure_api_data = {
-            "project": soos_context.project_name,
+            "projectName": soos_context.project_name,
             "name": datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
             "integrationType": soos_context.integration_type,
         }
