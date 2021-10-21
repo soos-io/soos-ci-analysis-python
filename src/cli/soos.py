@@ -426,7 +426,7 @@ class SOOS:
             url=murl,
             headers={'x-soos-apikey': self.context.api_key, 'Content-Type': 'application/json'}
         )
-        m = json.loads(my_Fmanifests.content)
+        m = json.loads(my_manifests.content)
         return m
 
     def find_manifest_files(self, pattern):
