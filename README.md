@@ -112,7 +112,7 @@ set "SOOS_PROJECT_NAME=<Project Name>" :: ENTER PROJECT NAME
 set "SOOS_LATEST_REPO=https://github.com/soos-io/soos-ci-analysis-python/releases/latest/download"
 
 :: ARGS WHERE CUSTOMIZATION IS OPTIONAL:
-set "SOURCE_CODE_PATH=<Source Code Main Directory>" :: ENTER SOURCE CODE MAIN DIRECTORY
+set "SOURCE_CODE_PATH=<Source Code Main Directory>":: ENTER SOURCE CODE MAIN DIRECTORY
 set "SOOS_MODE=run_and_wait"
 set "SOOS_ON_FAILURE=fail_the_build"
 set "SOOS_DIRS_TO_EXCLUDE=soos"
@@ -132,6 +132,8 @@ set "SOOS_BUILD_VERSION="              :: ENTER BUILD VERSION HERE IF KNOWN
 set "SOOS_BUILD_URI="                  :: ENTER BUILD URI HERE IF KNOWN
 set "SOOS_OPERATING_ENVIRONMENT="      :: ENTER OPERATING ENVIRONMENT HERE IF KNOWN (default will be provided)
 set "SOOS_INTEGRATION_NAME=Script"
+set "SOOS_CLIENT_ID="
+set "SOOS_API_KEY="
 
 :: **************************** Modify Above Only *************** ::
 
@@ -139,10 +141,8 @@ set "ROOT=%SOURCE_CODE_PATH%/soos"
 set "WORKSPACE=%ROOT%/workspace"
 mkdir "%WORKSPACE%"
 
-cd "%WORKSPACE%"
-
-curl -LJO "%SOOS_LATEST_REPO%/soos.py" -o "%WORKSPACE%/soos.py"
-curl -LJO "%SOOS_LATEST_REPO%/requirements.txt" -o "%WORKSPACE%/requirements.txt"
+curl -LJO "%SOOS_LATEST_REPO%/soos.py" -o "%ROOT%/soos.py"
+curl -LJO "%SOOS_LATEST_REPO%/requirements.txt" -o "%ROOT%/requirements.txt"
 
 cd "%ROOT%"
 
@@ -152,10 +152,9 @@ call activate.bat
 
 cd "%SOURCE_CODE_PATH%"
 
-pip3 install -r "%WORKSPACE%/requirements.txt"
+pip3 install -r "%ROOT%/requirements.txt"
 
-python "%WORKSPACE%/soos.py" -m="%SOOS_MODE%" -of="%SOOS_ON_FAILURE%" -dte="%SOOS_DIRS_TO_EXCLUDE%" -fte="%SOOS_FILES_TO_EXCLUDE%" -wd="%SOOS_CHECKOUT_DIR%" -armw=%SOOS_ANALYSIS_RESULT_MAX_WAIT% -arpi=%SOOS_ANALYSIS_RESULT_POLLING_INTERVAL% -buri="%SOOS_API_BASE_URL%" -scp="%SOOS_CHECKOUT_DIR%" -pn="%SOOS_PROJECT_NAME%" -ch="%SOOS_COMMIT_HASH%" -bn="%SOOS_BRANCH_NAME%" -bruri="%SOOS_BRANCH_URI%" -bldver="%SOOS_BUILD_VERSION%" -blduri="%SOOS_BUILD_URI%" -oe="%SOOS_OPERATING_ENVIRONMENT%" -intn="%SOOS_INTEGRATION_NAME%"
-
+python "%ROOT%/soos.py" -m="%SOOS_MODE%" -of="%SOOS_ON_FAILURE%" -dte="%SOOS_DIRS_TO_EXCLUDE%" -fte="%SOOS_FILES_TO_EXCLUDE%" -wd="%SOOS_CHECKOUT_DIR%" -armw=%SOOS_ANALYSIS_RESULT_MAX_WAIT% -arpi=%SOOS_ANALYSIS_RESULT_POLLING_INTERVAL% -buri="%SOOS_API_BASE_URL%" -scp="%SOOS_CHECKOUT_DIR%" -pn="%SOOS_PROJECT_NAME%" -ch="%SOOS_COMMIT_HASH%" -bn="%SOOS_BRANCH_NAME%" -bruri="%SOOS_BRANCH_URI%" -bldver="%SOOS_BUILD_VERSION%" -blduri="%SOOS_BUILD_URI%" -oe="%SOOS_OPERATING_ENVIRONMENT%" -intn="%SOOS_INTEGRATION_NAME%"
 ```
 
 ### Running the Script Asynchronously

@@ -62,7 +62,7 @@ class SOOSStructureAPI:
         api_response = None
 
         structure_api_data = {
-            "project": soos_context.project_name,
+            "projectName": soos_context.project_name,
             "name": datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
             "integrationType": soos_context.integration_type,
         }
@@ -426,7 +426,7 @@ class SOOS:
             url=murl,
             headers={'x-soos-apikey': self.context.api_key, 'Content-Type': 'application/json'}
         )
-        m = json.loads(my_Fmanifests.content)
+        m = json.loads(my_manifests.content)
         return m
 
     def find_manifest_files(self, pattern):
