@@ -152,9 +152,9 @@ call activate.bat
 
 cd "%SOURCE_CODE_PATH%"
 
-pip3 install -r "%WORKSPACE%/requirements.txt"
+pip3 install -r "%ROOT%/requirements.txt"
 
-python "%WORKSPACE%/soos.py" -m="%SOOS_MODE%" -of="%SOOS_ON_FAILURE%" -dte="%SOOS_DIRS_TO_EXCLUDE%" -fte="%SOOS_FILES_TO_EXCLUDE%" -wd="%SOOS_CHECKOUT_DIR%" -armw=%SOOS_ANALYSIS_RESULT_MAX_WAIT% -arpi=%SOOS_ANALYSIS_RESULT_POLLING_INTERVAL% -buri="%SOOS_API_BASE_URL%" -scp="%SOOS_CHECKOUT_DIR%" -pn="%SOOS_PROJECT_NAME%" -ch="%SOOS_COMMIT_HASH%" -bn="%SOOS_BRANCH_NAME%" -bruri="%SOOS_BRANCH_URI%" -bldver="%SOOS_BUILD_VERSION%" -blduri="%SOOS_BUILD_URI%" -oe="%SOOS_OPERATING_ENVIRONMENT%" -intn="%SOOS_INTEGRATION_NAME%"
+python "%ROOT%/soos.py" -m="%SOOS_MODE%" -of="%SOOS_ON_FAILURE%" -dte="%SOOS_DIRS_TO_EXCLUDE%" -fte="%SOOS_FILES_TO_EXCLUDE%" -wd="%SOOS_CHECKOUT_DIR%" -armw=%SOOS_ANALYSIS_RESULT_MAX_WAIT% -arpi=%SOOS_ANALYSIS_RESULT_POLLING_INTERVAL% -buri="%SOOS_API_BASE_URL%" -scp="%SOOS_CHECKOUT_DIR%" -pn="%SOOS_PROJECT_NAME%" -ch="%SOOS_COMMIT_HASH%" -bn="%SOOS_BRANCH_NAME%" -bruri="%SOOS_BRANCH_URI%" -bldver="%SOOS_BUILD_VERSION%" -blduri="%SOOS_BUILD_URI%" -oe="%SOOS_OPERATING_ENVIRONMENT%" -intn="%SOOS_INTEGRATION_NAME%"
 ```
 
 ### Running the Script Asynchronously
