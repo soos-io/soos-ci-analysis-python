@@ -108,11 +108,11 @@ echo off
 :: run soos.py with the -h flag for help
 :: ARGS REQUIRING CUSTOMIZATION:
 :: SOOS_CLIENT_ID and SOOS_API_KEY must be defined as Environment variables. You can get these values from SOOS Application
-set "SOOS_PROJECT_NAME=mihai_windows_v_1_4_8" :: ENTER PROJECT NAME
+set "SOOS_PROJECT_NAME=<Project Name>" :: ENTER PROJECT NAME
 set "SOOS_LATEST_REPO=https://github.com/soos-io/soos-ci-analysis-python/releases/latest/download"
 
 :: ARGS WHERE CUSTOMIZATION IS OPTIONAL:
-set "SOURCE_CODE_PATH=C:\thepy\":: ENTER SOURCE CODE MAIN DIRECTORY
+set "SOURCE_CODE_PATH=<Source Code Main Directory>":: ENTER SOURCE CODE MAIN DIRECTORY
 set "SOOS_MODE=run_and_wait"
 set "SOOS_ON_FAILURE=fail_the_build"
 set "SOOS_DIRS_TO_EXCLUDE=soos"
@@ -140,6 +140,9 @@ set "SOOS_API_KEY="
 set "ROOT=%SOURCE_CODE_PATH%/soos"
 set "WORKSPACE=%ROOT%/workspace"
 mkdir "%WORKSPACE%"
+
+curl -LJO "%SOOS_LATEST_REPO%/soos.py" -o "%ROOT%/soos.py"
+curl -LJO "%SOOS_LATEST_REPO%/requirements.txt" -o "%ROOT%/requirements.txt"
 
 cd "%ROOT%"
 
