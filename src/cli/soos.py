@@ -12,6 +12,8 @@ import platform
 from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
 import requests
 
+SCRIPT_VERSION = "1.5.0"
+
 
 class SOOSStructureAPIResponse:
 
@@ -65,6 +67,7 @@ class SOOSStructureAPI:
             "projectName": soos_context.project_name,
             "name": datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
             "integrationType": soos_context.integration_type,
+            "scriptVersion": SCRIPT_VERSION
         }
 
         if soos_context.branch_uri is not None:
