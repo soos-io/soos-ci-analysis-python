@@ -8,6 +8,7 @@ import argparse
 import time
 import urllib.parse
 import platform
+from typing import List, AnyStr
 
 from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
 import requests
@@ -432,9 +433,15 @@ class SOOS:
         m = json.loads(my_manifests.content)
         return m
 
-    def find_manifest_files(self, pattern):
+    def find_manifest_files(self, pattern: str) -> List[AnyStr]:
+        manifest_glob_pattern: str = pattern
+        if manifest_glob_pattern.startswith('.'):
+            manifest_glob_pattern = f"*{pattern}"
+
+        glob_pattern = f"{self.context.source_code_path}/**/{manifest_glob_pattern}"
+
         return glob.glob(
-            self.context.source_code_path + '/**/' + pattern,
+            glob_pattern,
             recursive=True
         )
 
