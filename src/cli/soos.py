@@ -8,18 +8,30 @@ import argparse
 import time
 import urllib.parse
 import platform
-from typing import List, AnyStr
+from typing import List, AnyStr, Optional
 
 from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
 import requests
 
-SCRIPT_VERSION = "1.5.0"
+SCRIPT_VERSION = "1.5.2"
+
+
+class ErrorAPIResponse:
+    code: Optional[str] = None
+    message: Optional[str] = None
+
+    def __init__(self, api_response):
+        for key in api_response:
+            self.__setattr__(key, api_response[key])
+
+        self.code = api_response["code"] if "code" in api_response else None
+        self.message = api_response["message"] if "message" in api_response else None
 
 
 class SOOSStructureAPIResponse:
 
-    def __init__(self, structure_response):
-        self.original_response = structure_response
+    def __init__(self, structure_response_api):
+        self.original_response = structure_response_api
 
         self.content_object = None
 
@@ -33,12 +45,25 @@ class SOOSStructureAPIResponse:
         if self.original_response is not None:
             self.content_object = json.loads(self.original_response.content)
 
-            self.structure_id = self.content_object["Id"]
-            self.project_id = self.content_object["projectId"]
-            self.analysis_id = self.content_object["Id"]
-            self.report_url = self.content_object["reportUrl"]
-            self.embed_url = self.content_object["embedUrl"]
-            self.report_status_url = self.content_object["reportStatusUrl"]
+            self.structure_id = self.content_object["Id"] if "Id" in self.content_object else None
+            self.project_id = self.content_object["projectId"] if "projectId" in self.content_object else None
+            self.analysis_id = self.content_object["Id"] if "Id" in self.content_object else None
+            self.report_url = self.content_object["reportUrl"] if "reportUrl" in self.content_object else None
+            self.embed_url = self.content_object["embedUrl"] if "embedUrl" in self.content_object else None
+            self.report_status_url = self.content_object[
+                "reportStatusUrl"] if "reportStatusUrl" in self.content_object else None
+
+
+def handle_response(api_response: requests.Response):
+    if response.status_code in range(400, 600):
+        return ErrorAPIResponse(api_response.json())
+    else:
+        return api_response.json()
+
+
+def handle_error(error: ErrorAPIResponse, api: str, attempt: int, max_retry: int):
+    error_message = f"{api} has an error. Attempt {str(attempt)} of {str(max_retry)}"
+    raise Exception(f"{error_message}\n{error.code}-{error.message}")
 
 
 class SOOSStructureAPI:
@@ -100,16 +125,13 @@ class SOOSStructureAPI:
                     # files=structure_api_data,
                     headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'})
 
-                if kernel.status_code > 500:
-                    #
-                    api_response = kernel
+                json_response = handle_response(api_response=kernel)
 
-                elif kernel.status_code == 403:
-                    api_reponse = kernel
-
+                if json_response is type(ErrorAPIResponse):
+                    api_response = json_response
+                    raise Exception(f"{json_response.code}-{json_response.message}")
                 else:
-                    api_response = SOOSStructureAPIResponse(kernel)
-
+                    api_response = SOOSStructureAPIResponse(json_response)
                 break
 
             except Exception as e:
@@ -1078,8 +1100,7 @@ if __name__ == "__main__":
         # Make API call and store response, assuming that status code < 299, ie successful call.
         structure_response = SOOSStructureAPI.exec(soos.context)
 
-        if structure_response is None:
-
+        if structure_response is None or structure_response is type(ErrorAPIResponse):
             SOOS.console_log("A Structure API error occurred: Could not execute API." + more_info)
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
