@@ -1,19 +1,20 @@
-import json
-from datetime import datetime
-import sys
-import glob
-import fnmatch
-import os
 import argparse
+import fnmatch
+import glob
+import json
+import os
+import platform
+import sys
 import time
 import urllib.parse
-import platform
-from typing import List, AnyStr, Optional
-
+from datetime import datetime
 from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
+from typing import List, AnyStr, Optional, Any, Dict
+
 import requests
 
 SCRIPT_VERSION = "1.5.2"
+SCAN_TYPE = "sca"
 
 
 class ErrorAPIResponse:
@@ -54,6 +55,36 @@ class SOOSStructureAPIResponse:
                 "reportStatusUrl"] if "reportStatusUrl" in self.content_object else None
 
 
+class CreateScanAPIResponse:
+    clientHash: Optional[str] = None
+    projectHash: Optional[str] = None
+    branchHash: Optional[str] = None
+    analysisId: Optional[str] = None
+    scanType: Optional[int] = None
+    scanUrl: Optional[str] = None
+    scanStatusUrl: Optional[str] = None
+    errors: Optional[List[Any]] = None
+
+    def __init__(self, create_scan_json_response):
+        for key in create_scan_json_response:
+            self.__setattr__(key, create_scan_json_response[key])
+
+
+class ScanStatusAPIResponse:
+    status: Optional[str] = None
+    analysisId: Optional[str] = None
+    results: Optional[Any] = None
+
+    def __init__(self, scan_status_json_response: Any):
+        for key in scan_status_json_response:
+            self.__setattr__(key, scan_status_json_response[key])
+
+
+def set_body_value(body: Dict, name: str, value: Any):
+    if value is not None:
+        body.__setattr__(name, value)
+
+
 def handle_response(api_response: requests.Response):
     if response.status_code in range(400, 600):
         return ErrorAPIResponse(api_response.json())
@@ -64,6 +95,15 @@ def handle_response(api_response: requests.Response):
 def handle_error(error: ErrorAPIResponse, api: str, attempt: int, max_retry: int):
     error_message = f"{api} has an error. Attempt {str(attempt)} of {str(max_retry)}"
     raise Exception(f"{error_message}\n{error.code}-{error.message}")
+
+
+def generate_header(api_key: str, content_type: str):
+    return {'x-soos-apikey': api_key, 'Content-Type': content_type}
+
+
+def raise_max_retry_exception(attempt: int, retry_count: int):
+    if attempt >= retry_count:
+        raise Exception("The maximum retries allowed were reached")
 
 
 class SOOSStructureAPI:
@@ -371,6 +411,119 @@ class SOOSContext:
             SOOS.console_log("REQUIRED PARAMETER IS MISSING: SOOS_API_KEY")
             SOOS.console_log(
                 "API_KEY, if you do not already have one, will be provided with a subscription to SOOS.io services.")
+
+
+class SOOSScanAPI:
+    URLS: dict = {
+        "create": "{baseUri}clients/{clientHash}/scan-types/{scanType}/scans",
+        "status": "{baseUri}clients/{clientHash}/projects/{projectHash}/branches/{branchHash}/scan-types/{scanType}/scans/{scanId}"
+    }
+    API_RETRY_COUNT = 3
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def generate_scan_api_url(context: SOOSContext, url_type: str, **kwargs) -> str:
+        if url_type not in SOOSScanAPI.URLS.keys():
+            raise Exception(f"URL type invalid: {url_type}")
+
+        params_args = {
+            "baseUri": context.base_uri,
+            "clientHash": context.client_id,
+            "scanType": SCAN_TYPE
+        }
+
+        if url_type == 'status':
+            params_args.__setattr__("projectHash", kwargs.get("projectHash"))
+            params_args.__setattr__("branchHash", kwargs.get("branchHash"))
+            params_args.__setattr__("scanId", kwargs.get("scanId"))
+
+        url = SOOSScanAPI.URLS.get(url_type).format(params_args)
+
+        SOOS.console_log(f"Scan URL: {url}")
+
+        return url
+
+    @staticmethod
+    def create_scan_metadata(context: SOOSContext, **kwargs) -> CreateScanAPIResponse | ErrorAPIResponse:
+        create_scan_response = None
+        toolName = kwargs.get('tool_name')
+
+        try:
+            url = SOOSScanAPI.generate_scan_api_url(context=context, url_type="create")
+
+            start_scan_data = {
+                "projectName": context.project_name,
+                "name": datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+                "integrationType": context.integration_type,
+                "scriptVersion": SCRIPT_VERSION,
+            }
+
+            set_body_value(start_scan_data, 'toolName', toolName)
+            set_body_value(start_scan_data, 'commitHash', context.commit_hash)
+            set_body_value(start_scan_data, 'branch', context.branch_name)
+            set_body_value(start_scan_data, 'branchUri', context.branch_uri)
+            set_body_value(start_scan_data, 'buildVersion', context.build_version)
+            set_body_value(start_scan_data, 'buildUri', context.build_uri)
+            set_body_value(start_scan_data, 'operatingEnvironment', context.operating_environment)
+            set_body_value(start_scan_data, 'integrationName', context.integration_name)
+
+            headers = generate_header(api_key=context.api_key, content_type="application/json")
+            data = json.dumps(start_scan_data)
+            attempt = 0
+
+            for attempt in range(0, SOOSScanAPI.API_RETRY_COUNT):
+                api_response: requests.Response = requests.post(url=url, data=data, headers=headers)
+                json_response = handle_response(api_response)
+                if type(json_response) is ErrorAPIResponse:
+                    create_scan_response = json_response
+                    error_message = f"A Create Structure API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}"
+                    SOOS.console_log(f"{error_message}\n{json_response.code}-{json_response.message}")
+                else:
+                    create_scan_response = CreateScanAPIResponse(create_scan_json_response=json_response)
+                    break
+
+            raise_max_retry_exception(attempt=attempt, retry_count=SOOSScanAPI.API_RETRY_COUNT)
+
+        except Exception as e:
+            SOOS.console_log(f"ERROR: {str(e)}")
+
+        return create_scan_response
+
+    @staticmethod
+    def get_scan_status(context: SOOSContext, **kwargs) -> ScanStatusAPIResponse:
+        scan_status_response = None
+        projectHash = kwargs.get("projectHash")
+        branchHash = kwargs.get("branchHash")
+        scanId = kwargs.get("scanId")
+
+        if projectHash is None or branchHash is None or scanId is None:
+            SOOS.console_log("ERROR: projectHash, branchHash, and scanId are required")
+
+        url = SOOSScanAPI.generate_scan_api_url(context=context, url_type="status", **kwargs)
+
+        headers = generate_header(api_key=context.api_key, content_type="application/json")
+        attempt = 0
+
+        for attempt in range(0, SOOSScanAPI.API_RETRY_COUNT):
+            try:
+                api_response: requests.Response = requests.get(url=url, headers=headers)
+                json_response = handle_response(api_response)
+                if type(json_response) is ErrorAPIResponse:
+                    scan_status_response = json_response
+                    error_message = f"A Scan Status API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}"
+                    SOOS.console_log(f"{error_message}\n{json_response.code}-{json_response.message}")
+                else:
+                    scan_status_response = ScanStatusAPIResponse(scan_status_json_response=json_response)
+                    break
+            except Exception as e:
+                SOOS.console_log(
+                    f"A Scan Status API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}")
+
+        raise_max_retry_exception(attempt=attempt, retry_count=SOOSScanAPI.API_RETRY_COUNT)
+
+        return scan_status_response
 
 
 class SOOSManifestAPI:
@@ -1098,40 +1251,34 @@ if __name__ == "__main__":
     if soos.script.mode in (SOOSModeOfOperation.RUN_AND_WAIT, SOOSModeOfOperation.ASYNC_INIT):
 
         # Make API call and store response, assuming that status code < 299, ie successful call.
-        structure_response = SOOSStructureAPI.exec(soos.context)
+        create_scan_api_response = SOOSScanAPI.create_scan_metadata(context=soos.context, tool_name=None)
+        #structure_response = SOOSStructureAPI.exec(soos.context)
 
-        if structure_response is None or structure_response is type(ErrorAPIResponse):
-            SOOS.console_log("A Structure API error occurred: Could not execute API." + more_info)
+        if create_scan_api_response is None:
+            SOOS.console_log("A Create Scan API error occurred: Could not execute API." + more_info)
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
             else:
                 sys.exit(0)
         # a response is returned but with original_response status code
-        elif structure_response.original_response.status_code >= 299:
-            if "message" in structure_response.original_response.json():
-                structure_code = structure_response.original_response.json()["code"]
-                structure_message = structure_response.original_response.json()["message"]
-                SOOS.console_log(f"STRUCTURE API STATUS: {structure_code} =====> {structure_message} {more_info}")
-                sys.exit(1)
-            # fallback in case the if clause doesnt work but there really is a > 299 response that deserves message.
-            else:
-                SOOS.console_log("A Structure API error occurred: Could not execute API." + more_info)
-                sys.exit(1)
+        elif create_scan_api_response is type(ErrorAPIResponse):
+            SOOS.console_log(f"STRUCTURE API STATUS: {create_scan_api_response.code} =====> {create_scan_api_response.message} {more_info}")
+            sys.exit(1)
 
         # ## STRUCTURE API CALL SUCCESSFUL - CONTINUE
 
         SOOS.console_log("------------------------")
         SOOS.console_log("Analysis Structure Request Created")
         SOOS.console_log("------------------------")
-        SOOS.console_log("Analysis Id: " + structure_response.analysis_id)
-        SOOS.console_log("Project Id:  " + structure_response.project_id)
+        SOOS.console_log("Analysis Id: " + create_scan_api_response.analysisId)
+        SOOS.console_log("Project Id:  " + create_scan_api_response.projectHash)
         # Now get ready to send your manifests out for Start Analysis API
 
         manifests_found_count = soos.send_manifests(
-            structure_response.project_id,
-            structure_response.analysis_id,
-            soos.script.directories_to_exclude,
-            soos.script.files_to_exclude
+            project_id=create_scan_api_response.projectHash,
+            analysis_id=create_scan_api_response.analysisId,
+            dirs_to_exclude=soos.script.directories_to_exclude,
+            files_to_exclude=soos.script.files_to_exclude
         )
 
         if manifests_found_count > 0:
@@ -1144,8 +1291,8 @@ if __name__ == "__main__":
 
                 response = SOOSAnalysisStartAPI.exec(
                     soos_context=soos.context,
-                    project_id=structure_response.project_id,
-                    analysis_id=structure_response.analysis_id
+                    project_id=create_scan_api_response.projectHash,
+                    analysis_id=create_scan_api_response.analysisId
                 )
 
                 if response.status_code >= 400:
@@ -1159,21 +1306,21 @@ if __name__ == "__main__":
                     SOOS.console_log(
                         "Analysis request is running, once completed, access the report using the links below")
                     print()
-                    SOOS.console_log("ReportUrl: " + structure_response.report_url)
+                    SOOS.console_log("ReportUrl: " + create_scan_api_response.scanUrl)
                     print()
 
                 if soos.script.mode == SOOSModeOfOperation.RUN_AND_WAIT:
 
                     soos.analysis_result_exec(
-                        structure_response.report_status_url,
-                        soos.script.analysis_result_max_wait,
-                        soos.script.analysis_result_polling_interval
+                        report_status_url=create_scan_api_response.scanStatusUrl,
+                        analysis_result_max_wait=soos.script.analysis_result_max_wait,
+                        analysis_result_polling_interval=soos.script.analysis_result_polling_interval
                     )
 
                 elif soos.script.mode == SOOSModeOfOperation.ASYNC_INIT:
 
                     # Write file here for RESULT process to pick up when it runs later
-                    file_contents = {"report_status_url": structure_response.report_status_url}
+                    file_contents = {"report_status_url": create_scan_api_response.scanStatusUrl}
                     file = open(soos.script.async_result_file, "w")
                     file.write(json.dumps(file_contents))
                     file.close()
