@@ -1125,14 +1125,13 @@ class SOOSAnalysisScript:
         parser.add_argument("-buri", dest="base_uri",
                             help="API URI Path. Default Value: https://api.soos.io/api/",
                             type=str,
-                            # default="https://api.soos.io/api/",
+                            default="https://api.soos.io/api/",
                             required=False
                             )
 
         parser.add_argument("-scp", dest="source_code_path",
                             help="Root path to begin recursive search for manifests. Default Value: ./",
                             type=str,
-                            # default="./",
                             required=False
                             )
 
