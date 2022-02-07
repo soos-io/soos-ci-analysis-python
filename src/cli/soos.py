@@ -9,7 +9,7 @@ import time
 import urllib.parse
 from datetime import datetime
 from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
-from typing import List, AnyStr, Optional, Any, Dict
+from typing import List, AnyStr, Optional, Any, Dict, Union
 
 import requests
 
@@ -446,7 +446,7 @@ class SOOSScanAPI:
         return url
 
     @staticmethod
-    def create_scan_metadata(context: SOOSContext, **kwargs) -> CreateScanAPIResponse | ErrorAPIResponse:
+    def create_scan_metadata(context: SOOSContext, **kwargs) -> Union[CreateScanAPIResponse, ErrorAPIResponse]:
         create_scan_response = None
         toolName = kwargs.get('tool_name')
 
@@ -492,7 +492,7 @@ class SOOSScanAPI:
         return create_scan_response
 
     @staticmethod
-    def get_scan_status(context: SOOSContext, **kwargs) -> ScanStatusAPIResponse:
+    def get_scan_status(context: SOOSContext, **kwargs) -> Union[ScanStatusAPIResponse, ErrorAPIResponse]:
         scan_status_response = None
         projectHash = kwargs.get("projectHash")
         branchHash = kwargs.get("branchHash")
