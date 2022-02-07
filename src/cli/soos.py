@@ -86,7 +86,7 @@ def set_body_value(body: Dict, name: str, value: Any):
 
 
 def handle_response(api_response: requests.Response):
-    if response.status_code in range(400, 600):
+    if api_response.status_code in range(400, 600):
         return ErrorAPIResponse(api_response.json())
     else:
         return api_response.json()
@@ -1251,7 +1251,7 @@ if __name__ == "__main__":
 
         # Make API call and store response, assuming that status code < 299, ie successful call.
         create_scan_api_response = SOOSScanAPI.create_scan_metadata(context=soos.context, tool_name=None)
-        #structure_response = SOOSStructureAPI.exec(soos.context)
+        # structure_response = SOOSStructureAPI.exec(soos.context)
 
         if create_scan_api_response is None:
             SOOS.console_log("A Create Scan API error occurred: Could not execute API." + more_info)
@@ -1261,7 +1261,8 @@ if __name__ == "__main__":
                 sys.exit(0)
         # a response is returned but with original_response status code
         elif create_scan_api_response is type(ErrorAPIResponse):
-            SOOS.console_log(f"STRUCTURE API STATUS: {create_scan_api_response.code} =====> {create_scan_api_response.message} {more_info}")
+            SOOS.console_log(
+                f"STRUCTURE API STATUS: {create_scan_api_response.code} =====> {create_scan_api_response.message} {more_info}")
             sys.exit(1)
 
         # ## STRUCTURE API CALL SUCCESSFUL - CONTINUE
