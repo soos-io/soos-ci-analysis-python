@@ -439,7 +439,7 @@ class SOOSScanAPI:
             params_args.__setattr__("branchHash", kwargs.get("branchHash"))
             params_args.__setattr__("scanId", kwargs.get("scanId"))
 
-        url = SOOSScanAPI.URLS.get(url_type).format(params_args)
+        url = SOOSScanAPI.URLS.get(url_type).format(**params_args)
 
         SOOS.console_log(f"Scan URL: {url}")
 
