@@ -774,6 +774,12 @@ class SOOS:
 
         print(time_now + " SOOS: " + message)
 
+    @staticmethod
+    def print_vulnerabilities(vulnerabilities, violations):
+        if vulnerabilities > 0 or violations > 0:
+            SOOS.console_log(f"Vulnerabilities: {vulnerabilities}")
+            SOOS.console_log(f"Violations: {violations}")
+
     def analysis_result_exec(self, report_status_url, analysis_result_max_wait, analysis_result_polling_interval):
 
         analysis_start_time = datetime.utcnow()
@@ -786,35 +792,38 @@ class SOOS:
                 )
                 sys.exit(1)
 
-            response = SOOSAnalysisResultAPI.exec(self.context, report_status_url)
+            analysis_result_api_response = SOOSAnalysisResultAPI.exec(self.context, report_status_url)
 
-            content_object = json.loads(response.content)
+            content_object = analysis_result_api_response.json()
 
-            if response.status_code < 299:
+            if analysis_result_api_response.status_code < 299:
 
-                analysis_status = str(content_object["status"])
+                analysis_status = str(content_object["status"]) if "status" in content_object else None
+                analysis_results = content_object["result"] if "result" in content_object else None
+                vulnerabilities = analysis_results[
+                    "vulnerabilities"] if analysis_results is not None and "vulnerabilities" in analysis_results else 0
+                violations = analysis_results[
+                    "violations"] if analysis_results is not None and "violations" in analysis_results else 0
+
+                SOOS.console_log(f"Response: {str(content_object)}")
 
                 if analysis_status.lower() == "finished":
                     SOOS.console_log("------------------------")
                     SOOS.console_log("Analysis Completed Successfully")
                     SOOS.console_log("------------------------")
+                    SOOS.print_vulnerabilities(vulnerabilities=vulnerabilities, violations=violations)
                     sys.exit(0)
                 elif analysis_status.lower().startswith("failed"):
                     SOOS.console_log("------------------------")
                     SOOS.console_log("Analysis complete - Failures reported.")
-
-                    # Additional Messaging based on type of failure...
-                    if analysis_status.lower().find("violation") >= 0:
-                        SOOS.console_log("FAILURE: Violations reported.")
-                    elif analysis_status.lower().find("vulnerabilit") >= 0:
-                        SOOS.console_log("FAILURE: Vulnerabilities reported.")
-                    else:
-                        # Unknown failure - no additional messaging-out
-                        pass
                     SOOS.console_log("------------------------")
+                    SOOS.print_vulnerabilities(vulnerabilities=vulnerabilities, violations=violations)
 
                     # Fail with error
-                    sys.exit(1)
+                    if self.script.on_failure == SOOSOnFailure.CONTINUE_ON_FAILURE:
+                        sys.exit(0)
+                    else:
+                        sys.exit(1)
 
                 elif analysis_status.lower() == "error":
                     SOOS.console_log(
@@ -834,9 +843,9 @@ class SOOS:
 
             else:
                 SOOS.console_log("------------------------")
-                if "message" in response.json():
-                    results_error_code = response.json()["code"]
-                    results_error_message = response.json()["message"]
+                if "message" in analysis_result_api_response.json():
+                    results_error_code = analysis_result_api_response.json()["code"]
+                    results_error_message = analysis_result_api_response.json()["message"]
                     SOOS.console_log(
                         "Analysis Results API Status Code:" + str(results_error_code) + results_error_message)
                     SOOS.console_log("------------------------")
