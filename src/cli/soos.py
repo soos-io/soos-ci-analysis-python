@@ -435,9 +435,9 @@ class SOOSScanAPI:
         }
 
         if url_type == 'status':
-            params_args.__setattr__("projectHash", kwargs.get("projectHash"))
-            params_args.__setattr__("branchHash", kwargs.get("branchHash"))
-            params_args.__setattr__("scanId", kwargs.get("scanId"))
+            params_args["projectHash"] = kwargs.get("projectHash")
+            params_args["branchHash"] = kwargs.get("branchHash")
+            params_args["scanId"] = kwargs.get("scanId")
 
         url = SOOSScanAPI.URLS.get(url_type).format(**params_args)
 
