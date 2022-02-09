@@ -82,7 +82,7 @@ class ScanStatusAPIResponse:
 
 def set_body_value(body: Dict, name: str, value: Any):
     if value is not None:
-        body.__setattr__(name, value)
+        body[name] = value
 
 
 def handle_response(api_response: requests.Response):
