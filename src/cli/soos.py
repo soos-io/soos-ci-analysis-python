@@ -575,8 +575,9 @@ class SOOSManifestAPI:
         files = []
         body = []
         for i, value in enumerate(manifests):
-            files.append((value.filename, value.content))
-            body.append(("manifestLabel"+str(i), value.label))
+            suffix = i if i > 0 else ""
+            files.append((value.filename+str(suffix), value.content))
+            body.append(("manifestLabel"+str(suffix), value.label))
         for i in range(0, SOOSManifestAPI.API_RETRY_COUNT):
             try:
                 SOOS.console_log("*** Posting manifests to: " + api_url)
