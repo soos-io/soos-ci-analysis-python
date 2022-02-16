@@ -527,6 +527,7 @@ class SOOSScanAPI:
 
 
 class SOOSManifestModel:
+    filename: str
     content: any
     label: str
 
@@ -576,7 +577,7 @@ class SOOSManifestAPI:
         body = []
         for i, value in enumerate(manifests):
             suffix = i if i > 0 else ""
-            files.append((value.filename+str(suffix), value.content))
+            files.append(("file"+str(suffix), (value.filename, value.content)))
             body.append(("parentFolder"+str(suffix), value.label))
         for i in range(0, SOOSManifestAPI.API_RETRY_COUNT):
             try:
@@ -585,6 +586,7 @@ class SOOSManifestAPI:
                 response = requests.post(
                     url=api_url,
                     files=dict(files),
+                    data=body,
                     headers={'x-soos-apikey': soos.context.api_key,
                              },
 
@@ -725,7 +727,7 @@ class SOOS:
                         with open(file_name, mode='r', encoding="utf-8") as the_file:
                             content = the_file.read()
                             if len(content.strip()) > 0:
-                                manifestArr.append(SOOSManifestModel(file_name, manifest_label, content))
+                                manifestArr.append(SOOSManifestModel(pure_filename, manifest_label, content))
                     except Exception as e:
                         SOOS.console_log("Could not send manifest: " + file_name + " due to error: " + str(e))
 
