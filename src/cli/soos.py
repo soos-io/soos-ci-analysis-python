@@ -526,6 +526,20 @@ class SOOSScanAPI:
         return scan_status_response
 
 
+class SOOSManifestModel:
+    filename: str
+    content: any
+    label: str
+
+    def __init__(self, filename: str, label: str, content: any):
+        self.filename = filename
+        self.label = label
+        self.content = content
+
+
+
+
+
 class SOOSManifestAPI:
     API_RETRY_COUNT = 3
 
@@ -533,16 +547,13 @@ class SOOSManifestAPI:
                    "clients/{soos_client_id}" \
                    "/projects/{soos_project_id}" \
                    "/analysis/{soos_analysis_id}" \
-                   "/manifests/{soos_manifest_label}/{soos_manifest_name}"
+                   "/manifests"
 
     def __init__(self):
         pass
 
     @staticmethod
-    def generate_api_url(soos_context, project_id, analysis_id, manifest_label, manifest_name):
-
-        manifest_label_for_url = urllib.parse.quote(manifest_label)
-        manifest_name_for_url = urllib.parse.quote(manifest_name)
+    def generate_api_url(soos_context, project_id, analysis_id):
 
         api_url = SOOSManifestAPI.URI_TEMPLATE
 
@@ -550,36 +561,38 @@ class SOOSManifestAPI:
         api_url = api_url.replace("{soos_client_id}", soos_context.client_id)
         api_url = api_url.replace("{soos_project_id}", project_id)
         api_url = api_url.replace("{soos_analysis_id}", analysis_id)
-        api_url = api_url.replace("{soos_manifest_name}", manifest_name_for_url)
-        api_url = api_url.replace("{soos_manifest_label}", manifest_label_for_url)
 
         return api_url
 
     @staticmethod
-    def exec(soos_context, project_id, analysis_id, manifest_label, manifest_name, manifest_content):
-
-        manifest_name = manifest_name.replace(".", "*")
-        manifest_label = manifest_label.replace(".", "").replace("/", "").replace("\\", "")
+    def exec(soos_context, project_id, analysis_id, manifests):
 
         api_url = SOOSManifestAPI.generate_api_url(
-            soos_context, project_id, analysis_id, manifest_label, manifest_name
+            soos_context, project_id, analysis_id
         )
 
         response = None
 
+        files = []
+        body = []
+        for i, value in enumerate(manifests):
+            suffix = i if i > 0 else ""
+            files.append(("file"+str(suffix), (value.filename, value.content)))
+            body.append(("parentFolder"+str(suffix), value.label))
         for i in range(0, SOOSManifestAPI.API_RETRY_COUNT):
             try:
-                SOOS.console_log("*** Putting manifest: " + manifest_name + " :: to: " + api_url)
+                SOOS.console_log("*** Posting manifests to: " + api_url)
                 # manifest_content is class str, convert to dict
-                response = requests.put(
+                response = requests.post(
                     url=api_url,
-                    files=dict(manifest=manifest_content),
+                    files=dict(files),
+                    data=body,
                     headers={'x-soos-apikey': soos.context.api_key,
-                             'Content_type': 'multipart/form-data'
-                             }
+                             },
+
                 )
 
-                SOOS.console_log("Manifest Put Executed: " + manifest_name)
+                SOOS.console_log("Manifests post Executed")
                 break
 
             except Exception as e:
@@ -631,6 +644,7 @@ class SOOS:
         SOOS.console_log("------------------------")
 
         MANIFEST_FILES = self.load_manifest_types()
+        manifestArr = []
 
         for manifest_file in MANIFEST_FILES:
             files = []
@@ -711,39 +725,34 @@ class SOOS:
                         manifest_label = immediate_parent_folder
 
                         with open(file_name, mode='r', encoding="utf-8") as the_file:
-
                             content = the_file.read()
                             if len(content.strip()) > 0:
-
-                                response = SOOSManifestAPI.exec(
-                                    soos_context=soos.context,
-                                    project_id=project_id,
-                                    analysis_id=analysis_id,
-                                    manifest_label=manifest_label,
-                                    manifest_name=pure_filename,
-                                    manifest_content=content
-                                )
-
-                                if "message" in response.json():
-
-                                    manifest_message = response.json()["message"]
-                                    manifest_code = response.json()["code"]
-                                    SOOS.console_log(
-                                        f"MANIFEST API STATUS: {response.status_code} || {manifest_code} =====> {manifest_message}")
-                                    print()
-                                    manifests_found_count += 1
-                                else:
-                                    SOOS.console_log(
-                                        "There was some error with the Manifest API. For more information, please visit https://soos.io/support")
-                                    print()
-                                    manifests_found_count += 1
-
-                            else:
-
-                                SOOS.console_log("WARNING: Manifest file is empty and will be ignored: " + file_name)
-
+                                manifestArr.append(SOOSManifestModel(pure_filename, manifest_label, content))
                     except Exception as e:
                         SOOS.console_log("Could not send manifest: " + file_name + " due to error: " + str(e))
+
+        try:
+            response = SOOSManifestAPI.exec(
+                soos_context=soos.context,
+                project_id=project_id,
+                analysis_id=analysis_id,
+                manifests=manifestArr
+            )
+
+            if "message" in response.json():
+                manifest_message = response.json()["message"]
+                manifest_code = response.json()["code"]
+                SOOS.console_log(
+                    f"MANIFEST API STATUS: {response.status_code} || {manifest_code} =====> {manifest_message}")
+                print()
+                manifests_found_count += 1
+            else:
+                SOOS.console_log(
+                "There was some error with the Manifest API. For more information, please visit https://soos.io/support")
+                print()
+                manifests_found_count += 1
+        except Exception as e:
+            SOOS.console_log("Could not upload manifest files due to a error: " + str(e))
 
         return manifests_found_count
 
