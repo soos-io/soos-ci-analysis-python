@@ -803,24 +803,26 @@ class SOOS:
 
             if analysis_result_api_response.status_code < 299:
 
-                analysis_status = str(content_object["status"]) if "status" in content_object else None
-                analysis_results = content_object["result"] if "result" in content_object else None
-                vulnerabilities = analysis_results[
-                    "vulnerabilities"] if analysis_results is not None and "vulnerabilities" in analysis_results else 0
-                violations = analysis_results[
-                    "violations"] if analysis_results is not None and "violations" in analysis_results else 0
+                analysis_status = str(content_object["status"]) if content_object and "status" in content_object\
+                    else None
+                vulnerabilities = content_object[
+                    "vulnerabilities"] if content_object is not None and "vulnerabilities" in content_object \
+                    else dict({"count": 0})
+                violations = content_object[
+                    "violations"] if content_object is not None and "violations" in content_object \
+                    else dict({"count": 0})
 
                 if analysis_status.lower() == "finished":
                     SOOS.console_log("------------------------")
                     SOOS.console_log("Analysis Completed Successfully")
                     SOOS.console_log("------------------------")
-                    SOOS.print_vulnerabilities(vulnerabilities=vulnerabilities, violations=violations)
+                    SOOS.print_vulnerabilities(vulnerabilities=vulnerabilities['count'], violations=violations['count'])
                     sys.exit(0)
                 elif analysis_status.lower().startswith("failed"):
                     SOOS.console_log("------------------------")
                     SOOS.console_log("Analysis complete - Failures reported.")
                     SOOS.console_log("------------------------")
-                    SOOS.print_vulnerabilities(vulnerabilities=vulnerabilities, violations=violations)
+                    SOOS.print_vulnerabilities(vulnerabilities=vulnerabilities['count'], violations=violations['count'])
 
                     # Fail with error
                     if self.script.on_failure == SOOSOnFailure.CONTINUE_ON_FAILURE:
