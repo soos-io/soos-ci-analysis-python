@@ -803,14 +803,14 @@ class SOOS:
 
             if analysis_result_api_response.status_code < 299:
 
-                analysis_status = str(content_object["status"]) if content_object and "status" in content_object\
+                analysis_status = str(content_object["status"]) if content_object and "status" in content_object \
                     else None
                 vulnerabilities = content_object[
-                    "vulnerabilities"] if content_object is not None and "vulnerabilities" in content_object \
-                    else dict({"count": 0})
+                    "vulnerabilities"] if content_object is not None and "vulnerabilities" in content_object and \
+                                          content_object["vulnerabilities"] is not None else dict({"count": 0})
                 violations = content_object[
-                    "violations"] if content_object is not None and "violations" in content_object \
-                    else dict({"count": 0})
+                    "violations"] if content_object is not None and "violations" in content_object and content_object[
+                    "violations"] is not None else dict({"count": 0})
 
                 if analysis_status.lower() == "finished":
                     SOOS.console_log("------------------------")
