@@ -15,6 +15,15 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Python 3.10
+          uses: actions/setup-python@v2
+          with:
+            python-version: "3.10"
+      - name: Run Integration Tests
+        run: |
+          cd tests
+          python run_and_wait.py
+          cd ..
       - name: shasum python script
         run: shasum -a 256 src/cli/soos.py > src/cli/soos.sha256
       - name: shasum requirements
