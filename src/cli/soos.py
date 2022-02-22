@@ -537,9 +537,6 @@ class SOOSManifestModel:
         self.content = content
 
 
-
-
-
 class SOOSManifestAPI:
     API_RETRY_COUNT = 3
 
@@ -577,8 +574,8 @@ class SOOSManifestAPI:
         body = []
         for i, value in enumerate(manifests):
             suffix = i if i > 0 else ""
-            files.append(("file"+str(suffix), (value.filename, value.content)))
-            body.append(("parentFolder"+str(suffix), value.label))
+            files.append(("file" + str(suffix), (value.filename, value.content)))
+            body.append(("parentFolder" + str(suffix), value.label))
         for i in range(0, SOOSManifestAPI.API_RETRY_COUNT):
             try:
                 SOOS.console_log("*** Posting manifests to: " + api_url)
@@ -748,7 +745,7 @@ class SOOS:
                 manifests_found_count += 1
             else:
                 SOOS.console_log(
-                "There was some error with the Manifest API. For more information, please visit https://soos.io/support")
+                    "There was some error with the Manifest API. For more information, please visit https://soos.io/support")
                 print()
                 manifests_found_count += 1
         except Exception as e:
@@ -813,8 +810,6 @@ class SOOS:
                     "vulnerabilities"] if analysis_results is not None and "vulnerabilities" in analysis_results else 0
                 violations = analysis_results[
                     "violations"] if analysis_results is not None and "violations" in analysis_results else 0
-
-                SOOS.console_log(f"Response: {str(content_object)}")
 
                 if analysis_status.lower() == "finished":
                     SOOS.console_log("------------------------")
