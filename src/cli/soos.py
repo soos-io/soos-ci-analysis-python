@@ -6,7 +6,6 @@ import os
 import platform
 import sys
 import time
-import urllib.parse
 from datetime import datetime
 from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
 from typing import List, AnyStr, Optional, Any, Dict, Union
