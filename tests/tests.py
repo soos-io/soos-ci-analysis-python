@@ -19,7 +19,7 @@ class GemfileTestCases(unittest.TestCase):
         print("testing gemfile")
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/gemfile/script.sh"], capture_output=True,
                                  text=True)
-
+        print(process.stdout)
         self.assertEqual(process.returncode, 1)
         self.assertEqual(process.stdout.count(test_complete_fail), 1)
         self.assertEqual(process.stdout.count(vulnerabilities(4)), 1)
@@ -32,6 +32,7 @@ class DartTestCases(unittest.TestCase):
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/dart/script.sh"], capture_output=True,
                                  text=True)
 
+        print(process.stdout)
         self.assertEqual(process.returncode, 1)
         self.assertEqual(process.stdout.count(test_complete_fail), 1)
         self.assertEqual(process.stdout.count(vulnerabilities(2)), 1)
@@ -44,6 +45,7 @@ class GradleTestCases(unittest.TestCase):
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/gradle/script.sh"], capture_output=True,
                                  text=True)
 
+        print(process.stdout)
         self.assertEqual(process.returncode, 1)
         self.assertEqual(process.stdout.count(test_complete_fail), 1)
         self.assertEqual(process.stdout.count(vulnerabilities(59)), 1)
@@ -56,6 +58,7 @@ class RustTestCases(unittest.TestCase):
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/rust/script.sh"], capture_output=True,
                                  text=True)
 
+        print(process.stdout)
         self.assertEqual(process.returncode, 1)
         self.assertEqual(process.stdout.count(test_complete_fail), 1)
         self.assertEqual(process.stdout.count(vulnerabilities(7)), 1)
@@ -68,6 +71,7 @@ class NugetTestCases(unittest.TestCase):
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/nuget/script.sh"], capture_output=True,
                                  text=True)
 
+        print(process.stdout)
         self.assertEqual(process.returncode, 1)
         self.assertEqual(process.stdout.count(test_complete_fail), 1)
         self.assertEqual(process.stdout.count(vulnerabilities(1)), 1)
@@ -89,6 +93,7 @@ class ComposerTestCases(unittest.TestCase):
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/composer/script.sh"], capture_output=True,
                                  text=True)
 
+        print(process.stdout)
         self.assertEqual(process.returncode, 0)
 
 
@@ -97,6 +102,7 @@ class NPMTestCases(unittest.TestCase):
         print("testing with issues")
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/with_issues/script.sh"], capture_output=True,
                                  text=True)
+        print(process.stdout)
         self.assertEqual(process.returncode, 1)
         self.assertEqual(process.stdout.count(test_complete_fail), 1)
         self.assertEqual(process.stdout.count(vulnerabilities(22)), 1)
@@ -105,6 +111,6 @@ class NPMTestCases(unittest.TestCase):
     def test_no_issues(self):
         print("testing without issues")
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/no_issues/script.sh"], capture_output=True, text=True)
+        print(process.stdout)
         self.assertEqual(process.returncode, 0)
         self.assertEqual(process.stdout.count("Analysis Completed Successfully"), 1)
-
