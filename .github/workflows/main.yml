@@ -22,7 +22,7 @@ jobs:
       - name: Run Integration Tests
         run: |
           cd tests
-          python run_and_wait.py
+          python -m unittest tests.py
           cd ..
       - name: shasum python script
         run: shasum -a 256 src/cli/soos.py > src/cli/soos.sha256
