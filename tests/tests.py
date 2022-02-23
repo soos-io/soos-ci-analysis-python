@@ -26,6 +26,42 @@ class GemfileTestCases(unittest.TestCase):
         self.assertEqual(process.stdout.count(violations(4)), 1)
 
 
+class DartTestCases(unittest.TestCase):
+    def test_dart(self):
+        print("testing dart")
+        process = subprocess.run(["sh", f"{os.getcwd()}/manifests/dart/script.sh"], capture_output=True,
+                                 text=True)
+
+        self.assertEqual(process.returncode, 1)
+        self.assertEqual(process.stdout.count(test_complete_fail), 1)
+        self.assertEqual(process.stdout.count(vulnerabilities(2)), 1)
+        self.assertEqual(process.stdout.count(violations(5)), 1)
+
+
+class GradleTestCases(unittest.TestCase):
+    def test_gradle(self):
+        print("testing gradle")
+        process = subprocess.run(["sh", f"{os.getcwd()}/manifests/gradle/script.sh"], capture_output=True,
+                                 text=True)
+
+        self.assertEqual(process.returncode, 1)
+        self.assertEqual(process.stdout.count(test_complete_fail), 1)
+        self.assertEqual(process.stdout.count(vulnerabilities(59)), 1)
+        self.assertEqual(process.stdout.count(violations(5)), 1)
+
+
+class RustTestCases(unittest.TestCase):
+    def test_rust(self):
+        print("testing rust")
+        process = subprocess.run(["sh", f"{os.getcwd()}/manifests/rust/script.sh"], capture_output=True,
+                                 text=True)
+
+        self.assertEqual(process.returncode, 1)
+        self.assertEqual(process.stdout.count(test_complete_fail), 1)
+        self.assertEqual(process.stdout.count(vulnerabilities(7)), 1)
+        self.assertEqual(process.stdout.count(violations(5)), 1)
+
+
 class NugetTestCases(unittest.TestCase):
     def test_nuget(self):
         print("testing nuget")
