@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Authors>SOOS</Authors>
+    <Company>SOOS LLC</Company>
+    <Copyright>2021 SOOS LLC</Copyright>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>true</Optimize>
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RestSharp" Version="106.10.1" />
+  </ItemGroup>
+</Project>
