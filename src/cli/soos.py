@@ -664,9 +664,8 @@ class SOOS:
 
                 for exclude_dir in dirs_to_exclude:
                     # Directories to Exclude
-                    if exclude_dir in pure_directory:
+                    if fnmatch.fnmatch(pure_directory, exclude_dir):
                         # skip this manifest
-
                         SOOS.console_log("Skipping file due to dirs_to_exclude: " + file_name)
                         exclude = True
                         continue
@@ -687,7 +686,7 @@ class SOOS:
 
                 for exclude_file in files_to_exclude:
                     # Files to Exclude
-                    if exclude_file in pure_filename:
+                    if fnmatch.fnmatch(pure_filename, exclude_file):
                         # skip this manifest
 
                         SOOS.console_log("Skipping file due to files_to_exclude: " + file_name)
@@ -1018,23 +1017,22 @@ class SOOSAnalysisScript:
 
         self.directories_to_exclude = ["node_modules"]
 
-        temp_dirs_to_exclude = []
         if args.directories_to_exclude is not None and len(args.directories_to_exclude.strip()) > 0:
-            SOOS.console_log("DIRS_TO_EXCLUDE: " + args.directories_to_exclude.strip())
-            temp_dirs_to_exclude = args.directories_to_exclude.split(",")
+            SOOS.console_log(f"DIRS_TO_EXCLUDE: {args.directories_to_exclude.strip()}")
+            temp_dirs_to_exclude: List[str] = args.directories_to_exclude.split(",")
 
-            for dir in temp_dirs_to_exclude:
-                self.directories_to_exclude.append(dir)
+            for directory in temp_dirs_to_exclude:
+                self.directories_to_exclude.append(directory.strip())
         else:
             SOOS.console_log("DIRS_TO_EXCLUDE: <NONE>")
 
         self.files_to_exclude = []
         if args.files_to_exclude is not None and len(args.files_to_exclude.strip()) > 0:
-            SOOS.console_log("FILES_TO_EXCLUDE: " + args.files_to_exclude.strip())
-            temp_files_to_exclude = args.files_to_exclude.split(",")
+            SOOS.console_log(f"FILES_TO_EXCLUDE: {args.files_to_exclude.strip()}")
+            temp_files_to_exclude: List[str] = args.files_to_exclude.split(",")
 
             for a_file in temp_files_to_exclude:
-                self.files_to_exclude.append(a_file)
+                self.files_to_exclude.append(a_file.strip())
         else:
             SOOS.console_log("FILES_TO_EXCLUDE: <NONE>")
 
