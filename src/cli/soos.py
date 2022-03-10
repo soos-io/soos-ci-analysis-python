@@ -664,7 +664,7 @@ class SOOS:
 
                 for exclude_dir in dirs_to_exclude:
                     # Directories to Exclude
-                    if fnmatch.fnmatch(pure_directory, exclude_dir):
+                    if fnmatch.fnmatch(pure_directory, exclude_dir) or exclude_dir in pure_directory:
                         # skip this manifest
                         SOOS.console_log("Skipping file due to dirs_to_exclude: " + file_name)
                         exclude = True
@@ -686,7 +686,7 @@ class SOOS:
 
                 for exclude_file in files_to_exclude:
                     # Files to Exclude
-                    if fnmatch.fnmatch(pure_filename, exclude_file):
+                    if fnmatch.fnmatch(pure_filename, exclude_file) or exclude_file in pure_filename:
                         # skip this manifest
 
                         SOOS.console_log("Skipping file due to files_to_exclude: " + file_name)
