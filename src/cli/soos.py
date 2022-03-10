@@ -12,7 +12,7 @@ from typing import List, AnyStr, Optional, Any, Dict, Union
 
 import requests
 
-SCRIPT_VERSION = "1.5.2"
+SCRIPT_VERSION = "1.5.3"
 SCAN_TYPE = "sca"
 
 
