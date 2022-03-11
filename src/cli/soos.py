@@ -372,6 +372,10 @@ class SOOSContext:
                 self.integration_name = str(args.integration_name)
                 SOOS.console_log("SOOS_INTEGRATION_NAME Parameter Loaded: " + self.integration_name)
 
+        if args.generate_sarif_report is True:
+            self.generate_sarif_report = args.generate_sarif_report
+            SOOS.console_log("SOOS_GENERATE_SARIF_REPORT Parameter Loaded: " + self.generate_sarif_report)
+
     def is_valid(self):
 
         if self.base_uri is None or len(self.base_uri) == 0:
@@ -929,6 +933,57 @@ class SOOSAnalysisResultAPI:
                 )
 
         return response
+
+
+class SOOSSARIFReport:
+    API_RETRY_COUNT = 3
+
+    URL_TEMPLATE = '{soos_base_uri}clients/{clientHash}/projects/{projectHash}/branches/{branchHash}/scan-types/sca/scans/{scanId}/formats/sarif'
+    GITHUB_URL_TEMPLATE = 'https://api.github.com/repos/{project_name}/code-scanning/sarifs'
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def generate_soos_sarif_url(base_uri: str, client_id: str, project_hash: str, branch_hash: str,
+                                scan_id: str) -> str:
+        return SOOSSARIFReport.URL_TEMPLATE.format(soos_base_uri=base_uri,
+                                                   clientHash=client_id,
+                                                   projectHash=project_hash,
+                                                   branchHash=branch_hash,
+                                                   scanId=scan_id)
+
+    @staticmethod
+    def generate_github_sarif_url(project_name: str) -> str:
+        return SOOSSARIFReport.GITHUB_URL_TEMPLATE.format(project_name=project_name)
+
+    @staticmethod
+    def exec(soos_context: SOOSContext, structure: CreateScanAPIResponse):
+        try:
+            url = SOOSSARIFReport.generate_soos_sarif_url(base_uri=soos_context.base_uri,
+                                                          client_id=soos_context.client_id,
+                                                          project_hash=structure.projectHash,
+                                                          branch_hash=structure.branchHash,
+                                                          scan_id=structure.analysisId)
+
+            headers = generate_header(api_key=context.api_key, content_type="application/json")
+            attempt = 0
+
+            for attempt in range(0, SOOSSARIFReport.API_RETRY_COUNT):
+                api_response: requests.Response = requests.get(url=url, headers=headers)
+                json_response = handle_response(api_response)
+                if type(json_response) is ErrorAPIResponse:
+                    create_scan_response = json_response
+                    error_message = f"A Generate SARIF Report API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}"
+                    SOOS.console_log(f"{error_message}\n{json_response.code}-{json_response.message}")
+                else:
+                    create_scan_response = CreateScanAPIResponse(create_scan_json_response=json_response)
+                    break
+
+            raise_max_retry_exception(attempt=attempt, retry_count=SOOSScanAPI.API_RETRY_COUNT)
+
+        except Exception as e:
+            SOOS.console_log(f"ERROR: {str(e)}")
 
 
 class SOOSOnFailure:
