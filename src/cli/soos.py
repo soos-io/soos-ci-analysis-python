@@ -200,6 +200,7 @@ class SOOSContext:
         self.build_uri = None
         self.operating_environment = None
         self.integration_name = None
+        self.generate_sarif_report = False
 
         # INTENTIONALLY HARDCODED
         self.integration_type = "CI"
@@ -1213,6 +1214,13 @@ class SOOSAnalysisScript:
                             help="Integration Name (e.g. Provider)",
                             type=str,
                             default=None,
+                            required=False
+                            )
+
+        parser.add_argument("-sarif", dest="generate_sarif_report",
+                            help="Upload SARIF Report to GitHub",
+                            type=bool,
+                            default=False,
                             required=False
                             )
 
