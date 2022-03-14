@@ -860,6 +860,11 @@ class SOOS:
                     SOOS.console_log("------------------------")
                     sys.exit(1)
 
+    def upload_sarif_report(self, project_hash: str, branch_hash: str, scan_id: str):
+        if self.context.generate_sarif_report is True:
+            SOOSSARIFReport.exec(context=self.context, project_hash=project_hash, branch_hash=branch_hash,
+                                 scan_id=scan_id)
+
 
 class SOOSAnalysisStartAPI:
     API_RETRY_COUNT = 3
@@ -958,32 +963,32 @@ class SOOSSARIFReport:
         return SOOSSARIFReport.GITHUB_URL_TEMPLATE.format(project_name=project_name)
 
     @staticmethod
-    def exec(soos_context: SOOSContext, structure: CreateScanAPIResponse):
+    def exec(context: SOOSContext, project_hash: str, branch_hash: str, scan_id: str):
         try:
-            url = SOOSSARIFReport.generate_soos_sarif_url(base_uri=soos_context.base_uri,
-                                                          client_id=soos_context.client_id,
-                                                          project_hash=structure.projectHash,
-                                                          branch_hash=structure.branchHash,
-                                                          scan_id=structure.analysisId)
+            url = SOOSSARIFReport.generate_soos_sarif_url(base_uri=context.base_uri,
+                                                          client_id=context.client_id,
+                                                          project_hash=project_hash,
+                                                          branch_hash=branch_hash,
+                                                          scan_id=scan_id)
 
             headers = generate_header(api_key=context.api_key, content_type="application/json")
             attempt = 0
 
             for attempt in range(0, SOOSSARIFReport.API_RETRY_COUNT):
                 api_response: requests.Response = requests.get(url=url, headers=headers)
-                json_response = handle_response(api_response)
-                if type(json_response) is ErrorAPIResponse:
-                    create_scan_response = json_response
-                    error_message = f"A Generate SARIF Report API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}"
-                    SOOS.console_log(f"{error_message}\n{json_response.code}-{json_response.message}")
+                sarif_json_response = handle_response(api_response)
+                if type(sarif_json_response) is ErrorAPIResponse:
+                    error_message = f"A Generate SARIF Report API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSSARIFReport.API_RETRY_COUNT)}"
+                    SOOS.console_log(f"{error_message}\n{sarif_json_response.code}-{sarif_json_response.message}")
                 else:
-                    create_scan_response = CreateScanAPIResponse(create_scan_json_response=json_response)
+                    SOOS.console_log("SARIF Report")
+                    SOOS.console_log(str(sarif_json_response))
                     break
 
-            raise_max_retry_exception(attempt=attempt, retry_count=SOOSScanAPI.API_RETRY_COUNT)
+            raise_max_retry_exception(attempt=attempt, retry_count=SOOSSARIFReport.API_RETRY_COUNT)
 
-        except Exception as e:
-            SOOS.console_log(f"ERROR: {str(e)}")
+        except Exception as sarif_exception:
+            SOOS.console_log(f"ERROR: {str(sarif_exception)}")
 
 
 class SOOSOnFailure:
@@ -1404,11 +1409,8 @@ if __name__ == "__main__":
 
                     sys.exit(0)
 
-            except Exception as e:
-                SOOS.console_log(
-
-                    "ERROR: " + str(e)
-                )
+            except Exception as general_exception:
+                SOOS.console_log("ERROR: " + str(general_exception))
 
                 if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                     sys.exit(1)
@@ -1442,7 +1444,7 @@ if __name__ == "__main__":
 
             sys.exit(0)
 
-        except FileNotFoundError as e:
+        except FileNotFoundError as file_not_found:
             SOOS.console_log("ERROR: The async file (containing the report URL) could not be found. Exiting.")
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
