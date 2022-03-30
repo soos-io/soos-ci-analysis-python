@@ -12,8 +12,31 @@ from typing import List, AnyStr, Optional, Any, Dict, Union
 
 import requests
 
-SCRIPT_VERSION = "1.5.3"
+SCRIPT_VERSION = "1.5.2"
 SCAN_TYPE = "sca"
+
+
+class GithubVersionChecker:
+    GITHUB_LATEST_RELEASE_URL = "https://api.github.com/repos/soos-io/soos-ci-analysis-python/releases/latest"
+    VERSION_KEY = "tag_name"
+
+    @staticmethod
+    def get_latest_version() -> Union[str, None]:
+        try:
+            headers = {'Accept': 'application/vnd.github.v3+json'}
+            github_release_response: requests.Response = requests.get(
+                url=GithubVersionChecker.GITHUB_LATEST_RELEASE_URL,
+                headers=headers)
+            if github_release_response.ok:
+                json_response = github_release_response.json()
+                version = json_response[
+                    GithubVersionChecker.VERSION_KEY] if GithubVersionChecker.VERSION_KEY in json_response else None
+
+                return version
+            else:
+                return None
+        except Exception as e:
+            return None
 
 
 class ErrorAPIResponse:
@@ -1225,6 +1248,16 @@ if __name__ == "__main__":
     if sys.version_info < (3, 6):
         print("**** SOOS FATAL ERROR: Python Version 3.6 or higher is required ****")
         sys.exit(1)
+
+    SOOS.console_log("Checking Script Version.....")
+    latest_version = GithubVersionChecker.get_latest_version()
+    current_version = f"v{SCRIPT_VERSION}"
+
+    if latest_version is not None and latest_version != current_version:
+        SOOS.console_log(
+            f"Your current version {current_version} is outdated. The latest version available is {latest_version}. Please update to the latest version to be sure that the script works in a proper way")
+    else:
+        SOOS.console_log("Congratulations, you have the latest version available")
 
     # Initialize SOOS
     soos = SOOS()
