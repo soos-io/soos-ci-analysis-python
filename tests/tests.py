@@ -114,7 +114,6 @@ class NPMTestCases(unittest.TestCase):
         self.assertEqual(process.returncode, 0)
         self.assertEqual(process.stdout.count(test_complete_success), 1)
 
-
 class ExcludeTestCases(unittest.TestCase):
     def test_exclude_files(self):
         print("testing exclude files")
