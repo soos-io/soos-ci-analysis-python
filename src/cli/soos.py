@@ -827,6 +827,7 @@ class SOOS:
                     SOOS.console_log("Analysis Completed Successfully")
                     SOOS.console_log("------------------------------------------------")
                     SOOS.print_vulnerabilities(vulnerabilities=vulnerabilities['count'], violations=violations['count'])
+                    return
                 elif analysis_status.lower().startswith("failed"):
                     SOOS.console_log("------------------------------------------------")
                     SOOS.console_log("Analysis complete - Failures reported.")
