@@ -8,13 +8,38 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
-from typing import List, AnyStr, Optional, Any, Dict, Union
-import gzip, base64
+from typing import List, AnyStr, Optional, Any, Dict, Union, Tuple
 
 import requests
 
 SCRIPT_VERSION = "1.5.3"
 SCAN_TYPE = "sca"
+
+
+class GithubVersionChecker:
+    GITHUB_LATEST_RELEASE_URL = "https://api.github.com/repos/soos-io/soos-ci-analysis-python/releases/latest"
+    VERSION_KEY = "tag_name"
+    URL_KEY = "html_url"
+
+    @staticmethod
+    def get_latest_version() -> Union[Tuple[str, str], None]:
+        try:
+            headers = {'Accept': 'application/vnd.github.v3+json'}
+            github_release_response: requests.Response = requests.get(
+                url=GithubVersionChecker.GITHUB_LATEST_RELEASE_URL,
+                headers=headers)
+            if github_release_response.ok:
+                json_response = github_release_response.json()
+                version = json_response[
+                    GithubVersionChecker.VERSION_KEY] if GithubVersionChecker.VERSION_KEY in json_response else None
+                url = json_response[
+                    GithubVersionChecker.URL_KEY] if GithubVersionChecker.URL_KEY in json_response else None
+
+                return version, url
+            else:
+                return None
+        except Exception as e:
+            return None
 
 
 class ErrorAPIResponse:
@@ -201,8 +226,6 @@ class SOOSContext:
         self.build_uri = None
         self.operating_environment = None
         self.integration_name = None
-        self.generate_sarif_report = False
-        self.github_pat = None
 
         # INTENTIONALLY HARDCODED
         self.integration_type = "CI"
@@ -373,14 +396,6 @@ class SOOSContext:
             if len(args.integration_name) > 0:
                 self.integration_name = str(args.integration_name)
                 SOOS.console_log("SOOS_INTEGRATION_NAME Parameter Loaded: " + self.integration_name)
-
-        if args.generate_sarif_report is True:
-            self.generate_sarif_report = args.generate_sarif_report
-            SOOS.console_log("SOOS_GENERATE_SARIF_REPORT Parameter Loaded: " + str(self.generate_sarif_report))
-
-        if args.github_pat is not None:
-            self.github_pat = args.github_pat
-            SOOS.console_log("SOOS_GITHUB_PAT Parameter Loaded: <SECRET>")
 
     def is_valid(self):
 
@@ -803,7 +818,7 @@ class SOOS:
 
             if (datetime.utcnow() - analysis_start_time).seconds > analysis_result_max_wait:
                 SOOS.console_log(
-                    f"Analysis Result Max Wait Time Reached ({str(analysis_result_max_wait)})"
+                    "Analysis Result Max Wait Time Reached (" + str(analysis_result_max_wait) + ")"
                 )
                 sys.exit(1)
 
@@ -823,25 +838,28 @@ class SOOS:
                     "violations"] is not None else dict({"count": 0})
 
                 if analysis_status.lower() == "finished":
-                    SOOS.console_log("------------------------------------------------")
+                    SOOS.console_log("------------------------")
                     SOOS.console_log("Analysis Completed Successfully")
-                    SOOS.console_log("------------------------------------------------")
+                    SOOS.console_log("------------------------")
                     SOOS.print_vulnerabilities(vulnerabilities=vulnerabilities['count'], violations=violations['count'])
-                    return
+                    sys.exit(0)
                 elif analysis_status.lower().startswith("failed"):
-                    SOOS.console_log("------------------------------------------------")
+                    SOOS.console_log("------------------------")
                     SOOS.console_log("Analysis complete - Failures reported.")
-                    SOOS.console_log("------------------------------------------------")
+                    SOOS.console_log("------------------------")
                     SOOS.print_vulnerabilities(vulnerabilities=vulnerabilities['count'], violations=violations['count'])
 
                     # Fail with error
                     if self.script.on_failure == SOOSOnFailure.CONTINUE_ON_FAILURE:
-                        return
+                        sys.exit(0)
                     else:
                         sys.exit(1)
 
                 elif analysis_status.lower() == "error":
-                    SOOS.console_log(f"Analysis Error. Will retry in {str(analysis_result_polling_interval)} seconds.")
+                    SOOS.console_log(
+                        "Analysis Error. Will retry in " +
+                        str(analysis_result_polling_interval) + " seconds."
+                    )
                     time.sleep(analysis_result_polling_interval)
                     continue
                 else:
@@ -854,19 +872,14 @@ class SOOS:
                     continue
 
             else:
-                SOOS.console_log("------------------------------------------------")
+                SOOS.console_log("------------------------")
                 if "message" in analysis_result_api_response.json():
                     results_error_code = analysis_result_api_response.json()["code"]
                     results_error_message = analysis_result_api_response.json()["message"]
                     SOOS.console_log(
                         "Analysis Results API Status Code:" + str(results_error_code) + results_error_message)
-                    SOOS.console_log("------------------------------------------------")
+                    SOOS.console_log("------------------------")
                     sys.exit(1)
-
-    def upload_sarif_report(self, project_hash: str, branch_hash: str, scan_id: str):
-        if self.context.generate_sarif_report is True:
-            SOOSSARIFReport.exec(context=self.context, project_hash=project_hash, branch_hash=branch_hash,
-                                 scan_id=scan_id)
 
 
 class SOOSAnalysisStartAPI:
@@ -879,21 +892,24 @@ class SOOSAnalysisStartAPI:
 
     @staticmethod
     def generate_api_url(soos_context, project_id, analysis_id):
-        return SOOSAnalysisStartAPI.URI_TEMPLATE.format(soos_base_uri=soos_context.base_uri,
-                                                        soos_client_id=soos_context.client_id,
-                                                        soos_project_id=project_id,
-                                                        soos_analysis_id=analysis_id)
+        api_url = SOOSAnalysisStartAPI.URI_TEMPLATE
+        api_url = api_url.replace("{soos_base_uri}", soos_context.base_uri)
+        api_url = api_url.replace("{soos_client_id}", soos_context.client_id)
+        api_url = api_url.replace("{soos_project_id}", project_id)
+        api_url = api_url.replace("{soos_analysis_id}", analysis_id)
+
+        return api_url
 
     @staticmethod
     def exec(soos_context, project_id, analysis_id):
 
         url = SOOSAnalysisStartAPI.generate_api_url(soos_context, project_id, analysis_id)
 
-        analysis_start_response = None
+        response = None
 
         for i in range(0, SOOSAnalysisStartAPI.API_RETRY_COUNT):
             try:
-                analysis_start_response = requests.put(
+                response = requests.put(
                     url=url,
                     data="{}",
                     headers={'x-soos-apikey': soos_context.api_key,
@@ -907,7 +923,7 @@ class SOOSAnalysisStartAPI:
                 SOOS.console_log("Analysis Start API Exception Occurred. "
                                  "Attempt " + str(i + 1) + " of " + str(SOOSAnalysisStartAPI.API_RETRY_COUNT))
 
-        return analysis_start_response
+        return response
 
 
 class SOOSAnalysisResultAPI:
@@ -920,11 +936,11 @@ class SOOSAnalysisResultAPI:
     @staticmethod
     def exec(soos_context, result_uri):
 
-        analysis_result_response = None
+        response = None
 
         for i in range(0, SOOSAnalysisResultAPI.API_RETRY_COUNT):
             try:
-                analysis_result_response = requests.get(
+                response = requests.get(
                     url=result_uri,
                     headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'}
                 )
@@ -937,110 +953,7 @@ class SOOSAnalysisResultAPI:
                     "Attempt " + str(i + 1) + " of " + str(SOOSAnalysisResultAPI.API_RETRY_COUNT)
                 )
 
-        return analysis_result_response
-
-
-class SOOSSARIFReport:
-    API_RETRY_COUNT = 3
-
-    URL_TEMPLATE = '{soos_base_uri}clients/{clientHash}/projects/{projectHash}/branches/{branchHash}/scan-types/sca/scans/{scanId}/formats/sarif'
-    GITHUB_URL_TEMPLATE = 'https://api.github.com/repos/{project_name}/code-scanning/sarifs'
-
-    errors_dict = {
-        400: "Github: The sarif report is invalid",
-        403: "Github: The repository is archived or if github advanced security is not enabled for this repository",
-        404: "Github: Resource not found",
-        413: "Github: The sarif report is too large",
-        503: "Github: Service Unavailable"
-    }
-
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def generate_soos_sarif_url(base_uri: str, client_id: str, project_hash: str, branch_hash: str,
-                                scan_id: str) -> str:
-        return SOOSSARIFReport.URL_TEMPLATE.format(soos_base_uri=base_uri,
-                                                   clientHash=client_id,
-                                                   projectHash=project_hash,
-                                                   branchHash=branch_hash,
-                                                   scanId=scan_id)
-
-    @staticmethod
-    def generate_github_sarif_url(project_name: str) -> str:
-        return SOOSSARIFReport.GITHUB_URL_TEMPLATE.format(project_name=project_name)
-
-    @staticmethod
-    def exec(context: SOOSContext, project_hash: str, branch_hash: str, scan_id: str):
-        try:
-            SOOS.console_log("Uploading SARIF Response")
-            url = SOOSSARIFReport.generate_soos_sarif_url(base_uri=context.base_uri,
-                                                          client_id=context.client_id,
-                                                          project_hash=project_hash,
-                                                          branch_hash=branch_hash,
-                                                          scan_id=scan_id)
-
-            headers = generate_header(api_key=context.api_key, content_type="application/json")
-            attempt = 0
-            sarif_json_response = None
-
-            for attempt in range(0, SOOSSARIFReport.API_RETRY_COUNT):
-                api_response: requests.Response = requests.get(url=url, headers=headers)
-                sarif_json_response = handle_response(api_response)
-                if type(sarif_json_response) is ErrorAPIResponse:
-                    error_message = f"A Generate SARIF Report API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSSARIFReport.API_RETRY_COUNT)}"
-                    SOOS.console_log(f"{error_message}\n{sarif_json_response.code}-{sarif_json_response.message}")
-                else:
-                    SOOS.console_log("SARIF Report")
-                    SOOS.console_log(str(sarif_json_response))
-                    break
-
-            raise_max_retry_exception(attempt=attempt, retry_count=SOOSSARIFReport.API_RETRY_COUNT)
-
-            if sarif_json_response is None:
-                raise Exception("An Error has occurred generating SARIF Response")
-            else:
-                sarif_report_str = json.dumps(sarif_json_response)
-                compressed_sarif_response = base64.b64encode(gzip.compress(bytes(sarif_report_str, 'UTF-8')))
-
-                github_body_request = {
-                    "commit_sha": context.commit_hash,
-                    "ref": context.branch_name,
-                    "sarif": compressed_sarif_response.decode(encoding='UTF-8'),
-                }
-
-                github_sarif_url = SOOSSARIFReport.generate_github_sarif_url(project_name=context.project_name)
-                headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"token {context.github_pat}"}
-
-                SOOS.console_log("GitHub URL")
-                SOOS.console_log(str(github_sarif_url))
-
-                SOOS.console_log("GitHub Body Request")
-                SOOS.console_log(str(github_body_request))
-
-                sarif_github_response = requests.post(url=github_sarif_url, data=json.dumps(github_body_request),
-                                                      headers=headers)
-
-                if sarif_github_response.status_code >= 400:
-                    SOOSSARIFReport.handle_github_sarif_error(status=sarif_github_response.status_code,
-                                                              json_response=sarif_github_response.json())
-                else:
-                    sarif_id = sarif_github_response.json()["id"]
-                    SOOS.console_log("SARIF Report uploaded to GitHub successful")
-                    SOOS.console_log(f"Id: {sarif_id}")
-
-        except Exception as sarif_exception:
-            SOOS.console_log(f"ERROR: {str(sarif_exception)}")
-
-    @staticmethod
-    def handle_github_sarif_error(status, json_response):
-
-        error_message = json_response["message"] if json_response is not None and json_response[
-            "message"] is not None else SOOSSARIFReport.errors_dict[status]
-        if error_message is None:
-            error_message = "An unexpected error has occurred uploading the sarif report to GitHub"
-
-        SOOS.console_log(f"ERROR: {error_message}")
+        return response
 
 
 class SOOSOnFailure:
@@ -1329,20 +1242,6 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("-sarif", dest="generate_sarif_report",
-                            help="Upload SARIF Report to GitHub",
-                            type=bool,
-                            default=False,
-                            required=False
-                            )
-
-        parser.add_argument("-gpat", dest="github_pat",
-                            help="GitHub Personal Authorization Token",
-                            type=str,
-                            default=False,
-                            required=False
-                            )
-
         return parser
 
 
@@ -1352,6 +1251,16 @@ if __name__ == "__main__":
     if sys.version_info < (3, 6):
         print("**** SOOS FATAL ERROR: Python Version 3.6 or higher is required ****")
         sys.exit(1)
+
+    SOOS.console_log("Checking Script Version.....")
+    latest_version, github_url = GithubVersionChecker.get_latest_version()
+    current_version = f"v{SCRIPT_VERSION}"
+
+    if latest_version is not None and latest_version != current_version:
+        SOOS.console_log(
+            f"Your current version {current_version} is outdated. The latest version available is {latest_version}. Please update to the latest version here: {github_url}")
+    else:
+        SOOS.console_log(f"Your current version {current_version} is the latest version available")
 
     # Initialize SOOS
     soos = SOOS()
@@ -1411,7 +1320,6 @@ if __name__ == "__main__":
         SOOS.console_log("------------------------")
         SOOS.console_log("Analysis Id: " + create_scan_api_response.analysisId)
         SOOS.console_log("Project Id:  " + create_scan_api_response.projectHash)
-        SOOS.console_log("Scan Status URL: " + create_scan_api_response.scanStatusUrl)
         # Now get ready to send your manifests out for Start Analysis API
 
         manifests_found_count = soos.send_manifests(
@@ -1457,12 +1365,6 @@ if __name__ == "__main__":
                         analysis_result_polling_interval=soos.script.analysis_result_polling_interval
                     )
 
-                    soos.upload_sarif_report(project_hash=create_scan_api_response.projectHash,
-                                             branch_hash=create_scan_api_response.branchHash,
-                                             scan_id=create_scan_api_response.analysisId)
-
-                    sys.exit(0)
-
                 elif soos.script.mode == SOOSModeOfOperation.ASYNC_INIT:
 
                     # Write file here for RESULT process to pick up when it runs later
@@ -1475,8 +1377,11 @@ if __name__ == "__main__":
 
                     sys.exit(0)
 
-            except Exception as general_exception:
-                SOOS.console_log("ERROR: " + str(general_exception))
+            except Exception as e:
+                SOOS.console_log(
+
+                    "ERROR: " + str(e)
+                )
 
                 if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                     sys.exit(1)
@@ -1485,7 +1390,7 @@ if __name__ == "__main__":
         else:  # so the number of manifests is NOT > 0 OR there is an outage
 
             SOOS.console_log(
-                f"Sorry, we could not locate any manifests under {soos.context.source_code_path} Please check your files and try again.")
+                "Sorry, we could not locate any manifests under " + soos.context.source_code_path + "  Please check your files and try again.")
             SOOS.console_log("For more help, please visit https://soos.io/support")
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
@@ -1510,7 +1415,7 @@ if __name__ == "__main__":
 
             sys.exit(0)
 
-        except FileNotFoundError as file_not_found:
+        except FileNotFoundError as e:
             SOOS.console_log("ERROR: The async file (containing the report URL) could not be found. Exiting.")
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
