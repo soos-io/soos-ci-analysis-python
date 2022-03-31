@@ -30,3 +30,4 @@ jobs:
       env:
         SOOS_CLIENT_ID: ${{ secrets.SOOS_CLIENT_ID }}
         SOOS_API_KEY: ${{ secrets.SOOS_API_KEY }}
+        SOOS_GITHUB_PAT: ${{ secrets.SOOS_GITHUB_PAT }}
