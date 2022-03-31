@@ -144,3 +144,13 @@ class ExcludeTestCases(unittest.TestCase):
         self.assertEqual(process.stdout.count('manifests/exclude_dirs/exclude/cargo.lock'), 1)
         self.assertEqual(process.stdout.count('Found manifest file:'), 3)
         self.assertEqual(process.stdout.count(test_complete_fail), 1)
+
+class SarifTestCases(unittest.TestCase):
+    def test_sarif(self):
+        print("testing sarif")
+        process = subprocess.run(["sh", f"{os.getcwd()}/manifests/sarif/script.sh"], capture_output=True,
+                                 text=True)
+
+        print(process.stdout)
+        self.assertEqual(process.returncode, 0)
+        self.assertEqual(process.stdout.count(test_complete_success), 1)
