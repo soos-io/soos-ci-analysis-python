@@ -94,8 +94,8 @@ class ComposerTestCases(unittest.TestCase):
                                  text=True)
 
         print(process.stdout)
-        self.assertEqual(process.returncode, 0)
-        self.assertEqual(process.stdout.count(test_complete_success), 1)
+        self.assertEqual(process.returncode, 1)
+        self.assertEqual(process.stdout.count(test_complete_fail), 1)
 
 
 class NPMTestCases(unittest.TestCase):
@@ -111,8 +111,8 @@ class NPMTestCases(unittest.TestCase):
         print("testing without issues")
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/no_issues/script.sh"], capture_output=True, text=True)
         print(process.stdout)
-        self.assertEqual(process.returncode, 0)
-        self.assertEqual(process.stdout.count(test_complete_success), 1)
+        self.assertEqual(process.returncode, 1)
+        self.assertEqual(process.stdout.count(test_complete_fail), 1)
 
 
 class ExcludeTestCases(unittest.TestCase):
