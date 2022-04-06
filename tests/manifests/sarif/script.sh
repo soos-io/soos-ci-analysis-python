@@ -1,0 +1,31 @@
+#!/bin/sh
+
+SOOS_PROJECT_NAME="soos-io/sarif-integration-test"
+# BUILD/BRANCH SPECIFIC ARGS:
+SOOS_COMMIT_HASH="735fb876fe5aa34d90a92f801f064f65b9d56925"                # ENTER COMMIT HASH HERE IF KNOWN
+SOOS_BRANCH_NAME="refs/heads/main"                # ENTER BRANCH NAME HERE IF KNOWN
+SOOS_BRANCH_URI=""                 # ENTER BRANCH URI HERE IF KNOWN
+SOOS_BUILD_VERSION=""              # ENTER BUILD VERSION HERE IF KNOWN
+SOOS_BUILD_URI=""                  # ENTER BUILD URI HERE IF KNOWN
+SOOS_OPERATING_ENVIRONMENT=""      # ENTER OPERATING ENVIRONMENT HERE IF KNOWN (default will be provided)
+SOOS_INTEGRATION_NAME="Script"
+
+# OPTIONAL ARGS:
+WORKSPACE="./manifests/sarif" #PUT YOUR REPO PATH HERE
+SOOS_MODE="run_and_wait"
+SOOS_ON_FAILURE="fail_the_build"
+SOOS_DIRS_TO_EXCLUDE="../../../src/cli"
+SOOS_FILES_TO_EXCLUDE=""
+SOOS_ANALYSIS_RESULT_MAX_WAIT=300
+SOOS_ANALYSIS_RESULT_POLLING_INTERVAL=10
+SOOS_CHECKOUT_DIR="${PWD}/manifests/sarif"
+SOOS_API_BASE_URL="https://dev-api.soos.io/api/"
+# BUILD/BRANCH SPECIFIC ARGS:
+
+cd ${WORKSPACE}
+
+python3 -m venv venv
+source venv/bin/activate
+
+pip3 install -r ../../../src/cli/requirements.txt
+python3 ../../../src/cli/soos.py -m="${SOOS_MODE}" -of="${SOOS_ON_FAILURE}" -dte="${SOOS_DIRS_TO_EXCLUDE}" -fte="${SOOS_FILES_TO_EXCLUDE}" -wd="${SOOS_CHECKOUT_DIR}" -armw=${SOOS_ANALYSIS_RESULT_MAX_WAIT} -arpi=${SOOS_ANALYSIS_RESULT_POLLING_INTERVAL} -buri="${SOOS_API_BASE_URL}" -scp="${SOOS_CHECKOUT_DIR}" -pn=${SOOS_PROJECT_NAME} -ch=${SOOS_COMMIT_HASH} -bn=${SOOS_BRANCH_NAME} -bruri="${SOOS_BRANCH_URI}" -bldver="${SOOS_BUILD_VERSION}" -blduri="${SOOS_BUILD_URI}" -oe="${SOOS_OPERATING_ENVIRONMENT}" -intn="${SOOS_INTEGRATION_NAME}" -sarif=True -gpat=${SOOS_GITHUB_PAT}
