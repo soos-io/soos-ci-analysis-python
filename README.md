@@ -1,15 +1,28 @@
 # SOOS Security Analysis: Python Script
-## OSS Security for Everyone
-The **SOOS Python Script** is the most flexible way to run SOOS against your codebase to gain insights into your open source package risk. Run locally or on a CI/CD
-server, using either synchronous or asynchronous mode.
+
+Scan your software for **vulnerabilities** and **license issues**.  Generate **SBOMs**. 
+
+Use **SOOS Core SCA** to:
+
+1. Find, fix and monitor known **vulnerabilities**
+2. Review open source **license usage** within your project
+3. Track tickets in **Jira** or **GitHub** Issues
+4. Generate an **SBOM** 
 
 ## Supported Languages and Package Managers
 
-*	[Node (NPM)](https://www.npmjs.com/)
-*	[Python (pypi)](https://pypi.org/)
-*	[.NET (NuGet)](https://www.nuget.org/)
-*	[Ruby (Ruby Gems)](https://rubygems.org/)
-*	[Java (Maven)](https://maven.apache.org/)
+* [Cargo - Rust](https://doc.rust-lang.org/cargo/)
+* [Composer - PHP](https://maven.apache.org/)
+* [Dart PM (Pub Package Manager) - Dart](https://pub.dev/)
+* [Gradle - Java & Kotlin](https://gradle.org/)
+* [Homebrew - (various languages)](https://brew.sh/)
+* [Maven - Java](https://maven.apache.org/)
+* [Mix - Elixir](https://hexdocs.pm/mix/Mix.html)
+* [NuGet - .NET](https://www.nuget.org/)
+* [NPM (Node Package Manager) - Node](https://www.npmjs.com/)
+* [PyPI - Python](https://pypi.org/)
+* [Rebar3 - Erlang](https://rebar3.readme.io/docs/getting-started)
+* [Ruby Gems - Ruby](https://rubygems.org/)
 
 Our full list of supported manifest formats can be found [here](https://kb.soos.io/help/soos-languages-supported).
 
@@ -42,7 +55,7 @@ The script will always attempt to load a specific set of parameters from environ
 -scp="./" 
 -pn="PROJECT NAME GOES HERE"
 ```
-
+- `pn` - (project name) REQUIRED. A custom project name that will present itself as a collection of test results within your soos.io dashboard. For SARIF Report, it should be `{repository_owner}/{repository_name}`   
 - `m` - (mode) the mode of running the script. Use *run_and_wait* to run synchronously. Use *async_init* to start async scanning, add other tasks and then use *async_result* to wait for the scan to complete
 - `of` - (on failure) the method for handling failed scans (when violations or vulnerabilities are encountered). Use *fail_the_build* to fail the build (return exit code 1) if a violation or vulnerability is encountered. Use *continue_on_fail* to ignore violations or vulnerabilities and let the build continue
 - `dte` - (directories to exclude) the list of comma separated directories to exclude
@@ -53,6 +66,8 @@ The script will always attempt to load a specific set of parameters from environ
 - `scp` - (source code path) the root directory to start looking for manifests in (recursively)
 - `cid` - (client id) your SOOS client identifier (not required if using the environment variable)
 - `akey` - (api key) your SOOS API key (not required if using the environment variable)
+- `sarif` - (generate sarif report) generate the SARIF Report for GitHub
+- `gpat` - (GitHub Personal Access Token) A GitHub Personal Access Token used to upload the SARIF Report. It must have the `security_events` scope to use this endpoint for private repositories. It must have also the `public_repo` scope for public repositories only. 
 
 ### Full Shell Script Example
 ```bash
