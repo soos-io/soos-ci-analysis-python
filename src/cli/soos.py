@@ -268,7 +268,7 @@ class SOOSContext:
         self.client_id = None
         self.api_key = None
 
-    def load(self, args):
+    def load(self, script_args):
 
         # Prioritize context from environment variables
         # Any environment variables that are not set will
@@ -278,7 +278,7 @@ class SOOSContext:
         if not self.is_valid():
 
             # Attempt to get MISSING context from parameters
-            self.load_from_parameters(args)
+            self.load_from_parameters(script_args=script_args)
 
             if not self.is_valid():
                 return False
@@ -324,89 +324,89 @@ class SOOSContext:
         except Exception as e:
             pass
 
-    def load_from_parameters(self, args):
+    def load_from_parameters(self, script_args):
         '''
         The parameters that are present in load_from_env_var will have a chance to be overloaded here.
         All other parameters can only be found in the args list.
 
-        :param args:
+        :param script_args:
         :return:
         '''
 
         # Do not reset - enable parameters to override environment variables
         # self.reset()
 
-        if args.base_uri is not None:
-            self.base_uri = str(args.base_uri)
+        if script_args.base_uri is not None:
+            self.base_uri = str(script_args.base_uri)
             SOOS.console_log("SOOS_API_BASE_URI Parameter Loaded: " + self.base_uri)
 
-        if args.source_code_path is not None:
-            self.__set_source_code_path__(str(args.source_code_path))
+        if script_args.source_code_path is not None:
+            self.__set_source_code_path__(str(script_args.source_code_path))
             SOOS.console_log("SOOS_ROOT_CODE_PATH Parameter Loaded: " + self.source_code_path)
 
-        if args.project_name is not None:
-            self.project_name = str(args.project_name)
+        if script_args.project_name is not None:
+            self.project_name = str(script_args.project_name)
             SOOS.console_log("SOOS_PROJECT_NAME Parameter Loaded: " + self.project_name)
 
-        if args.client_id is not None:
-            self.client_id = str(args.client_id)
+        if script_args.client_id is not None:
+            self.client_id = str(script_args.client_id)
             SOOS.console_log("SOOS_CLIENT_ID Parameter Loaded: SECRET")
 
-        if args.api_key is not None:
-            self.api_key = str(args.api_key)
+        if script_args.api_key is not None:
+            self.api_key = str(script_args.api_key)
             SOOS.console_log("SOOS_API_KEY Parameter Loaded: SECRET")
 
         # ##################################################
         # Special Context - loads from script arguments only
         # ##################################################
 
-        if args.commit_hash is not None:
-            if len(args.commit_hash) > 0:
-                self.commit_hash = str(args.commit_hash)
+        if script_args.commit_hash is not None:
+            if len(script_args.commit_hash) > 0:
+                self.commit_hash = str(script_args.commit_hash)
                 SOOS.console_log("SOOS_COMMIT_HASH Parameter Loaded: " + self.commit_hash)
 
-        if args.branch_name is not None:
-            if len(args.branch_name) > 0:
-                self.branch_name = str(args.branch_name)
+        if script_args.branch_name is not None:
+            if len(script_args.branch_name) > 0:
+                self.branch_name = str(script_args.branch_name)
                 SOOS.console_log("SOOS_BRANCH_NAME Parameter Loaded: " + self.branch_name)
 
-        if args.branch_uri is not None:
-            if len(args.branch_uri) > 0:
-                self.branch_uri = str(args.branch_uri)
+        if script_args.branch_uri is not None:
+            if len(script_args.branch_uri) > 0:
+                self.branch_uri = str(script_args.branch_uri)
                 SOOS.console_log("SOOS_BRANCH_URI Parameter Loaded: " + self.branch_uri)
 
-        if args.build_version is not None:
-            if len(args.build_version) > 0:
-                self.build_version = str(args.build_version)
+        if script_args.build_version is not None:
+            if len(script_args.build_version) > 0:
+                self.build_version = str(script_args.build_version)
                 SOOS.console_log("SOOS_BUILD_VERSION Parameter Loaded: " + self.build_version)
 
-        if args.build_uri is not None:
-            if len(args.build_uri) > 0:
-                self.build_uri = str(args.build_uri)
+        if script_args.build_uri is not None:
+            if len(script_args.build_uri) > 0:
+                self.build_uri = str(script_args.build_uri)
                 SOOS.console_log("SOOS_BUILD_URI Parameter Loaded: " + self.build_uri)
 
         # Operating environment, if missing, will default to sys.platform
 
-        if args.operating_environment is not None:
-            if len(args.operating_environment) > 0:
-                self.operating_environment = str(args.operating_environment)
+        if script_args.operating_environment is not None:
+            if len(script_args.operating_environment) > 0:
+                self.operating_environment = str(script_args.operating_environment)
             else:
                 self.operating_environment = sys.platform
         else:
             self.operating_environment = sys.platform
         SOOS.console_log("SOOS_OPERATING_ENVIRONMENT Parameter Loaded: " + self.operating_environment)
 
-        if args.integration_name is not None:
-            if len(args.integration_name) > 0:
-                self.integration_name = str(args.integration_name)
+        if script_args.integration_name is not None:
+            if len(script_args.integration_name) > 0:
+                self.integration_name = str(script_args.integration_name)
                 SOOS.console_log("SOOS_INTEGRATION_NAME Parameter Loaded: " + self.integration_name)
 
-        if args.generate_sarif_report is True:
-            self.generate_sarif_report = args.generate_sarif_report
+        if script_args.generate_sarif_report is True:
+            self.generate_sarif_report = script_args.generate_sarif_report
             SOOS.console_log("SOOS_GENERATE_SARIF_REPORT Parameter Loaded: " + str(self.generate_sarif_report))
 
-        if args.github_pat is not None:
-            self.github_pat = args.github_pat
+        if script_args.github_pat is not None:
+            self.github_pat = script_args.github_pat
             SOOS.console_log("SOOS_GITHUB_PAT Parameter Loaded: <SECRET>")
 
     def is_valid(self):
@@ -1143,17 +1143,17 @@ class SOOSAnalysisScript:
 
         self.async_result_file = str(async_result_file_path)
 
-    def load_script_arguments(self):
+    def load_script_arguments(self, script_args):
 
-        if args.mode is not None:
-            self.mode = str(args.mode)
+        if script_args.mode is not None:
+            self.mode = str(script_args.mode)
         else:
             self.mode = "run_and_wait"
 
         SOOS.console_log("MODE: " + self.mode)
 
-        if args.on_failure is not None:
-            self.on_failure = str(args.on_failure)
+        if script_args.on_failure is not None:
+            self.on_failure = str(script_args.on_failure)
         else:
             self.on_failure = "fail_the_build"
 
@@ -1161,9 +1161,9 @@ class SOOSAnalysisScript:
 
         self.directories_to_exclude = ["node_modules"]
 
-        if args.directories_to_exclude is not None and len(args.directories_to_exclude.strip()) > 0:
-            SOOS.console_log(f"DIRS_TO_EXCLUDE: {args.directories_to_exclude.strip()}")
-            temp_dirs_to_exclude: List[str] = args.directories_to_exclude.split(",")
+        if script_args.directories_to_exclude is not None and len(script_args.directories_to_exclude.strip()) > 0:
+            SOOS.console_log(f"DIRS_TO_EXCLUDE: {script_args.directories_to_exclude.strip()}")
+            temp_dirs_to_exclude: List[str] = script_args.directories_to_exclude.split(",")
 
             for directory in temp_dirs_to_exclude:
                 self.directories_to_exclude.append(directory.strip())
@@ -1171,9 +1171,9 @@ class SOOSAnalysisScript:
             SOOS.console_log("DIRS_TO_EXCLUDE: <NONE>")
 
         self.files_to_exclude = []
-        if args.files_to_exclude is not None and len(args.files_to_exclude.strip()) > 0:
-            SOOS.console_log(f"FILES_TO_EXCLUDE: {args.files_to_exclude.strip()}")
-            temp_files_to_exclude: List[str] = args.files_to_exclude.split(",")
+        if script_args.files_to_exclude is not None and len(script_args.files_to_exclude.strip()) > 0:
+            SOOS.console_log(f"FILES_TO_EXCLUDE: {script_args.files_to_exclude.strip()}")
+            temp_files_to_exclude: List[str] = script_args.files_to_exclude.split(",")
 
             for a_file in temp_files_to_exclude:
                 self.files_to_exclude.append(a_file.strip())
@@ -1181,7 +1181,7 @@ class SOOSAnalysisScript:
             SOOS.console_log("FILES_TO_EXCLUDE: <NONE>")
 
         # WORKING DIRECTORY & ASYNC RESUlT FILE
-        self.__set_working_dir_and_async_result_file__(args.working_directory)
+        self.__set_working_dir_and_async_result_file__(script_args.working_directory)
 
         SOOS.console_log("WORKING_DIRECTORY: " + self.working_directory)
         SOOS.console_log("ASYNC_RESULT_FILE: " + self.async_result_file)
@@ -1191,8 +1191,8 @@ class SOOSAnalysisScript:
         # Minimum: Any
         # Maximum: Unlimited
         self.analysis_result_max_wait = 5 * 60
-        if args.analysis_result_max_wait is not None:
-            self.analysis_result_max_wait = int(args.analysis_result_max_wait)
+        if script_args.analysis_result_max_wait is not None:
+            self.analysis_result_max_wait = int(script_args.analysis_result_max_wait)
 
         SOOS.console_log("ANALYSIS_RESULT_MAX_WAIT: " + str(self.analysis_result_max_wait))
 
@@ -1201,8 +1201,8 @@ class SOOSAnalysisScript:
         # Minimum: 10 seconds
         # Maximum: Unlimited
         self.analysis_result_polling_interval = 10
-        if args.analysis_result_polling_interval is not None:
-            self.analysis_result_polling_interval = int(args.analysis_result_polling_interval)
+        if script_args.analysis_result_polling_interval is not None:
+            self.analysis_result_polling_interval = int(script_args.analysis_result_polling_interval)
             if self.analysis_result_polling_interval < SOOSAnalysisScript.MIN_ANALYSIS_RESULT_POLLING_INTERVAL:
                 self.analysis_result_polling_interval = SOOSAnalysisScript.MIN_ANALYSIS_RESULT_POLLING_INTERVAL
 
@@ -1402,11 +1402,11 @@ if __name__ == "__main__":
     parser = soos.script.register_arguments()
     args = parser.parse_args()
 
-    soos.script.load_script_arguments()
-    soos.context.load(args)
+    soos.script.load_script_arguments(script_args=args)
+    load_context_result = soos.context.load(script_args=args)
     MANIFEST_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/manifests"
 
-    if not soos.context.load(args):
+    if load_context_result is False:
 
         SOOS.console_log("Could not find required Environment/Script Variables. "
                          "One or more are missing or empty:")
