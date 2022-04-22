@@ -236,7 +236,7 @@ class SOOSContext:
         self.github_pat = None
 
         # INTENTIONALLY HARDCODED
-        self.integration_type = "CI"
+        self.integration_type = "Script"
 
     def __set_source_code_path__(self, source_code_directory):
         """
