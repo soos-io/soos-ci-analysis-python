@@ -14,8 +14,9 @@ from typing import List, AnyStr, Optional, Any, Dict, Union, Tuple
 
 import requests
 
-SCRIPT_VERSION = "1.5.3"
+SCRIPT_VERSION = "1.5.4"
 SCAN_TYPE = "sca"
+ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 class GithubVersionChecker:
@@ -116,7 +117,10 @@ def handle_response(api_response: requests.Response):
     if api_response.status_code in range(400, 600):
         return ErrorAPIResponse(api_response.json())
     else:
-        return api_response.json()
+        if api_response.reason == "No Content":
+            return None
+        else:
+            return api_response.json()
 
 
 def handle_error(error: ErrorAPIResponse, api: str, attempt: int, max_retry: int):
@@ -232,7 +236,7 @@ class SOOSContext:
         self.github_pat = None
 
         # INTENTIONALLY HARDCODED
-        self.integration_type = "CI"
+        self.integration_type = "Script"
 
     def __set_source_code_path__(self, source_code_directory):
         """
@@ -1025,7 +1029,8 @@ class SOOSSARIFReport:
             raise_max_retry_exception(attempt=attempt, retry_count=SOOSSARIFReport.API_RETRY_COUNT)
 
             if sarif_json_response is None:
-                raise Exception("An Error has occurred generating SARIF Response")
+                SOOS.console_log("This project contains no issues. There will be no SARIF upload.")
+                return
             else:
                 SOOS.console_log("Uploading SARIF Report to GitHub")
                 sarif_report_str = json.dumps(sarif_json_response)
@@ -1035,6 +1040,8 @@ class SOOSSARIFReport:
                     "commit_sha": context.commit_hash,
                     "ref": context.branch_name,
                     "sarif": compressed_sarif_response.decode(encoding='UTF-8'),
+                    "started_at": ANALYSIS_START_TIME,
+                    "tool_name": "SOOS SCA"
                 }
 
                 github_sarif_url = SOOSSARIFReport.generate_github_sarif_url(project_name=context.project_name)
