@@ -14,7 +14,7 @@ from typing import List, AnyStr, Optional, Any, Dict, Union, Tuple
 
 import requests
 
-SCRIPT_VERSION = "1.5.3"
+SCRIPT_VERSION = "1.5.4"
 SCAN_TYPE = "sca"
 ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
