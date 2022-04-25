@@ -659,12 +659,12 @@ class SOOS:
         m = json.loads(my_manifests.content)
         return m
 
-    def find_manifest_files(self, pattern: str) -> List[AnyStr]:
+    def find_manifest_files(self, dirname, pattern: str) -> List[AnyStr]:
         manifest_glob_pattern: str = pattern
         if manifest_glob_pattern.startswith('.'):
             manifest_glob_pattern = f"*{pattern}"
 
-        glob_pattern = f"{self.context.source_code_path}/**/{manifest_glob_pattern}"
+        glob_pattern = f"{self.context.source_code_path}/{dirname}/**/{manifest_glob_pattern}"
 
         return glob.glob(
             glob_pattern,
@@ -685,58 +685,71 @@ class SOOS:
         manifestArr = []
 
         for manifest_file in MANIFEST_FILES:
-            files = []
+            mfiles = []
             package_manager = manifest_file['packageManager']
             SOOS.console_log("Looking for " + package_manager + " files...")
+            root, dirnames, filenames = os.walk(code_root) #walk through the root and find everything 
+            #go through the directories, finding those that should be included 
+            for a_dir in dirnames:
+                if not fnmatch.fnmatch(a_dir, exclude_dir)
+                    for entries in manifest_file["manifests"]:
+                        pattern = entries["pattern"]
+                        candidate_files = self.find_manifest_files(dirname = a_dir, pattern=pattern)
+                        for cf in candidate_files:
+                            mfiles.append(cf)
+                        
+            
+            #now go through the files, finding those that should be included 
+            
+            
+            for a_file in filenames:
+                
+                  if not fnmatch.fnmatch(a_file, exclude_file): #only consider if its not excluded
+                         for entries in manifest_file["manifests"]:
+                         pattern = entries["pattern"]
+                         if fnmatch(a_file, pattern):  #now see if the pattern matches 
+                                mfiles.append(a_file)  #include in file list 
+                               
+                        
+#             for file_name in files:
+#                 exclude = False
+#                 pure_filename = os.path.basename(file_name)
+#                 pure_directory = os.path.dirname(file_name)
+#                 immediate_parent_folder = ""
 
-            for entries in manifest_file["manifests"]:
-                pattern = entries["pattern"]
-                candidate_files = self.find_manifest_files(pattern=pattern)
+#                 for exclude_dir in dirs_to_exclude:
+#                     # Directories to Exclude
+#                     if fnmatch.fnmatch(pure_directory, exclude_dir) or exclude_dir in pure_directory:
+#                         # skip this manifest
+#                         SOOS.console_log("Skipping file due to dirs_to_exclude: " + file_name)
+#                         exclude = True
+#                         continue
 
-                for cf in candidate_files:
-                    files.append(cf)
-            # iterate each
-            # avoid directories to exclude
+#                 if pure_directory.startswith("./"):
+#                     pure_directory = code_root + pure_directory[2:]
+#                 elif pure_directory == ".":
+#                     pure_directory = code_root
 
-            for file_name in files:
-                exclude = False
-                pure_filename = os.path.basename(file_name)
-                pure_directory = os.path.dirname(file_name)
-                immediate_parent_folder = ""
+#                 # Files to Exclude
+#                 full_file_path = pure_directory
+#                 if full_file_path.find("/") >= 0:
+#                     if not full_file_path.endswith("/"):
+#                         full_file_path += "/" + pure_filename
+#                 else:
+#                     if not full_file_path.endswith("\\"):
+#                         full_file_path += "\\" + pure_filename
 
-                for exclude_dir in dirs_to_exclude:
-                    # Directories to Exclude
-                    if fnmatch.fnmatch(pure_directory, exclude_dir) or exclude_dir in pure_directory:
-                        # skip this manifest
-                        SOOS.console_log("Skipping file due to dirs_to_exclude: " + file_name)
-                        exclude = True
-                        continue
+#                 for exclude_file in files_to_exclude:
+#                     # Files to Exclude
+#                     if fnmatch.fnmatch(pure_filename, exclude_file) or exclude_file in pure_filename:
+#                         # skip this manifest
 
-                if pure_directory.startswith("./"):
-                    pure_directory = code_root + pure_directory[2:]
-                elif pure_directory == ".":
-                    pure_directory = code_root
+#                         SOOS.console_log("Skipping file due to files_to_exclude: " + file_name)
 
-                # Files to Exclude
-                full_file_path = pure_directory
-                if full_file_path.find("/") >= 0:
-                    if not full_file_path.endswith("/"):
-                        full_file_path += "/" + pure_filename
-                else:
-                    if not full_file_path.endswith("\\"):
-                        full_file_path += "\\" + pure_filename
+#                         exclude = True
+#                         continue
 
-                for exclude_file in files_to_exclude:
-                    # Files to Exclude
-                    if fnmatch.fnmatch(pure_filename, exclude_file) or exclude_file in pure_filename:
-                        # skip this manifest
-
-                        SOOS.console_log("Skipping file due to files_to_exclude: " + file_name)
-
-                        exclude = True
-                        continue
-
-                if not exclude:
+                for candidate in mfiles:
                     # log the manifest
 
                     SOOS.console_log("Found manifest file: " + file_name)
