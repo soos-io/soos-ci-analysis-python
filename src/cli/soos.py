@@ -706,8 +706,8 @@ class SOOS:
                 
                   if not fnmatch.fnmatch(a_file, exclude_file): #only consider if its not excluded
                          for entries in manifest_file["manifests"]:
-                         pattern = entries["pattern"]
-                         if fnmatch(a_file, pattern):  #now see if the pattern matches 
+                            pattern = entries["pattern"]
+                            if fnmatch(a_file, pattern):  #now see if the pattern matches 
                                 mfiles.append(a_file)  #include in file list 
                                
                         
