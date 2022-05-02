@@ -17,6 +17,7 @@ import requests
 SCRIPT_VERSION = "1.5.4"
 SCAN_TYPE = "sca"
 ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+MAX_MANIFESTS = 50
 
 
 class GithubVersionChecker:
@@ -585,13 +586,14 @@ class SOOSManifestAPI:
                    "clients/{soos_client_id}" \
                    "/projects/{soos_project_id}" \
                    "/analysis/{soos_analysis_id}" \
-                   "/manifests"
+                   "/manifests" \
+                   "?hasMoreThanMaximumManifests={has_more_than_maximum_manifests}"
 
     def __init__(self):
         pass
 
     @staticmethod
-    def generate_api_url(soos_context, project_id, analysis_id):
+    def generate_api_url(soos_context, project_id, analysis_id, has_more_than_maximum_manifests):
 
         api_url = SOOSManifestAPI.URI_TEMPLATE
 
@@ -599,14 +601,15 @@ class SOOSManifestAPI:
         api_url = api_url.replace("{soos_client_id}", soos_context.client_id)
         api_url = api_url.replace("{soos_project_id}", project_id)
         api_url = api_url.replace("{soos_analysis_id}", analysis_id)
+        api_url = api_url.replace("{has_more_than_maximum_manifests}", str(has_more_than_maximum_manifests))
 
         return api_url
 
     @staticmethod
-    def exec(soos_context, project_id, analysis_id, manifests):
+    def exec(soos_context, project_id, analysis_id, manifests, has_more_than_maximum_manifests):
 
         api_url = SOOSManifestAPI.generate_api_url(
-            soos_context, project_id, analysis_id
+            soos_context, project_id, analysis_id, has_more_than_maximum_manifests
         )
 
         response = None
@@ -674,6 +677,7 @@ class SOOS:
     def send_manifests(self, project_id, analysis_id, dirs_to_exclude, files_to_exclude):
 
         manifests_found_count = 0
+        has_more_than_maximum_manifests = False
 
         code_root = SOOS.get_current_directory()
 
@@ -768,12 +772,19 @@ class SOOS:
                     except Exception as e:
                         SOOS.console_log("Could not send manifest: " + file_name + " due to error: " + str(e))
 
+        if len(manifestArr) > MAX_MANIFESTS:
+            SOOS.console_log(f"Maximum number of manifests exceeded. Taking first {MAX_MANIFESTS} only.")
+            print()
+            has_more_than_maximum_manifests = True
+            manifestArr = manifestArr[0:MAX_MANIFESTS]
+
         try:
             response = SOOSManifestAPI.exec(
                 soos_context=soos.context,
                 project_id=project_id,
                 analysis_id=analysis_id,
-                manifests=manifestArr
+                manifests=manifestArr,
+                has_more_than_maximum_manifests=has_more_than_maximum_manifests
             )
 
             if "message" in response.json():
@@ -782,12 +793,12 @@ class SOOS:
                 SOOS.console_log(
                     f"MANIFEST API STATUS: {response.status_code} || {manifest_code} =====> {manifest_message}")
                 print()
-                manifests_found_count += 1
+                manifests_found_count = len(manifestArr)
             else:
                 SOOS.console_log(
                     "There was some error with the Manifest API. For more information, please visit https://soos.io/support")
                 print()
-                manifests_found_count += 1
+                manifests_found_count = len(manifestArr)
         except Exception as e:
             SOOS.console_log("Could not upload manifest files due to a error: " + str(e))
 
