@@ -389,15 +389,15 @@ class SOOSContext:
                 self.build_uri = str(script_args.build_uri)
                 SOOS.console_log("SOOS_BUILD_URI Parameter Loaded: " + self.build_uri)
 
-        # Operating environment, if missing, will default to sys.platform
+        # Operating environment, if missing, will default to platform
 
         if script_args.operating_environment is not None:
             if len(script_args.operating_environment) > 0:
                 self.operating_environment = str(script_args.operating_environment)
             else:
-                self.operating_environment = sys.platform
+                self.operating_environment = '{system} {release} {architecture}'.format(system=platform.system(), release=platform.release(), architecture=platform.architecture()[0])
         else:
-            self.operating_environment = sys.platform
+            self.operating_environment = '{system} {release} {architecture}'.format(system=platform.system(), release=platform.release(), architecture=platform.architecture()[0])
         SOOS.console_log("SOOS_OPERATING_ENVIRONMENT Parameter Loaded: " + self.operating_environment)
 
         if script_args.integration_name is not None:
