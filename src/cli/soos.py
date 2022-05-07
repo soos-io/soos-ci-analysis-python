@@ -224,6 +224,7 @@ class SOOSContext:
         self.project_name = None
         self.client_id = None
         self.api_key = None
+        self.verbose_logging = False
 
         # Special Context - loads from script arguments only
         self.commit_hash = None
@@ -360,6 +361,10 @@ class SOOSContext:
         if script_args.api_key is not None:
             self.api_key = str(script_args.api_key)
             SOOS.console_log("SOOS_API_KEY Parameter Loaded: SECRET")
+
+        if script_args.verbose_logging is True:
+            self.verbose_logging = script_args.verbose_logging
+            SOOS.console_log("SOOS_VERBOSE_LOGGING: Enabled")
 
         # ##################################################
         # Special Context - loads from script arguments only
@@ -712,7 +717,7 @@ class SOOS:
                     # Directories to Exclude
                     if fnmatch.fnmatch(pure_directory, exclude_dir) or exclude_dir in pure_directory:
                         # skip this manifest
-                        SOOS.console_log("Skipping file due to dirs_to_exclude: " + file_name)
+                        soos.console_log_verbose("Skipping file due to dirs_to_exclude: " + file_name)
                         exclude = True
                         continue
 
@@ -735,7 +740,7 @@ class SOOS:
                     if fnmatch.fnmatch(pure_filename, exclude_file) or exclude_file in pure_filename:
                         # skip this manifest
 
-                        SOOS.console_log("Skipping file due to files_to_exclude: " + file_name)
+                        soos.console_log_verbose("Skipping file due to files_to_exclude: " + file_name)
 
                         exclude = True
                         continue
@@ -745,7 +750,7 @@ class SOOS:
 
                     SOOS.console_log("Found manifest file: " + file_name)
 
-                    # call the api with the manifest file content as the body
+                    # append manifest file content to manifests array
 
                     try:
                         try:
@@ -830,6 +835,10 @@ class SOOS:
         time_now = datetime.utcnow().isoformat(timespec="seconds", sep=" ")
 
         print(time_now + " SOOS: " + message)
+
+    def console_log_verbose(self, message):
+        if self.context.verbose_logging is True:
+            SOOS.console_log(message)
 
     @staticmethod
     def print_vulnerabilities(vulnerabilities, violations):
@@ -1325,6 +1334,11 @@ class SOOSAnalysisScript:
                             help="API Key",
                             type=str,
                             required=False
+                            )
+
+        parser.add_argument("--v", dest="verbose_logging",
+                            help="Enable verbose logging",
+                            action=argparse.BooleanOptionalAction
                             )
 
         # CI SPECIAL CONTEXT
