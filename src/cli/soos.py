@@ -229,7 +229,7 @@ class SOOSStructureAPI:
 
                 json_response = handle_response(api_response=kernel)
 
-                if json_response is type(ErrorAPIResponse):
+                if type(json_response) is ErrorAPIResponse:
                     api_response = json_response
                     raise Exception(f"{json_response.code}-{json_response.message}")
                 else:
@@ -679,6 +679,11 @@ class SOOSManifestAPI:
         if response is None:
             return None
 
+        # edge case where API returns bad response but has manifest results
+        if (response.status_code == 400 and response.reason != "No Content"
+                and "validManifestCount" in response.json()):
+            return AddManifestsResponse(add_manifests_response_json=response.json())
+
         json_response = handle_response(response)
         if type(json_response) is ErrorAPIResponse:
             return json_response
@@ -716,13 +721,14 @@ class SOOS:
             recursive=True
         )
 
-    # returns count of valid manifests that were uploaded
-    def send_manifests(self, project_id, analysis_id, dirs_to_exclude, files_to_exclude) -> int:
+    # returns count of valid manifests that were uploaded or None on error
+    def send_manifests(self, project_id, analysis_id, dirs_to_exclude, files_to_exclude) -> Optional[int]:
 
         has_more_than_maximum_manifests = False
 
         code_root = SOOS.get_current_directory()
 
+        print()
         SOOS.console_log("------------------------")
         SOOS.console_log("Begin Recursive Manifest Search")
         SOOS.console_log("------------------------")
@@ -836,26 +842,29 @@ class SOOS:
             if add_manifests_response is None or add_manifests_response.code is None:
                 SOOS.console_log(
                     "There was some error with the Manifest API. For more information, please visit https://soos.io/support")
-                return 0
+                return None
             else:
                 SOOS.console_log(
                     f"Manifest upload status: {add_manifests_response.statusCode} || {add_manifests_response.code} || {add_manifests_response.message}")
-                if add_manifests_response.validManifestCount is not None:
-                    SOOS.console_log(f"Valid manifest count: {add_manifests_response.validManifestCount}")
-                if add_manifests_response.invalidManifestCount is not None:
-                    SOOS.console_log(f"Invalid manifest count: {add_manifests_response.invalidManifestCount}")
-                if add_manifests_response.manifests is not None:
-                    for manifest in add_manifests_response.manifests:
-                        soos.console_log_verbose(f"{manifest.name}: {manifest.statusMessage}")
 
-            if add_manifests_response.validManifestCount is not None:
+                if type(add_manifests_response) is AddManifestsResponse:
+                    if add_manifests_response.validManifestCount is not None:
+                        SOOS.console_log(f"Valid manifest count: {add_manifests_response.validManifestCount}")
+                    if add_manifests_response.invalidManifestCount is not None:
+                        SOOS.console_log(f"Invalid manifest count: {add_manifests_response.invalidManifestCount}")
+                    if add_manifests_response.manifests is not None:
+                        for manifest in add_manifests_response.manifests:
+                            soos.console_log_verbose(f"{manifest.name}: {manifest.statusMessage}")
+
+            if (type(add_manifests_response) is AddManifestsResponse
+                    and add_manifests_response.validManifestCount is not None):
                 return add_manifests_response.validManifestCount
             else:
-                return 0
+                return None
 
         except Exception as e:
             SOOS.console_log("Could not upload manifest files due to an error: " + str(e))
-            return 0
+            return None
 
     @staticmethod
     def recursive_glob(treeroot, pattern):
@@ -922,12 +931,14 @@ class SOOS:
                     "violations"] is not None else dict({"count": 0})
 
                 if analysis_status.lower() == "finished":
+                    print()
                     SOOS.console_log("------------------------------------------------")
                     SOOS.console_log("Analysis Completed Successfully")
                     SOOS.console_log("------------------------------------------------")
                     SOOS.print_vulnerabilities(vulnerabilities=vulnerabilities['count'], violations=violations['count'])
                     return
                 elif analysis_status.lower().startswith("failed"):
+                    print()
                     SOOS.console_log("------------------------------------------------")
                     SOOS.console_log("Analysis complete - Failures reported.")
                     SOOS.console_log("------------------------------------------------")
@@ -953,6 +964,7 @@ class SOOS:
                     continue
 
             else:
+                print()
                 SOOS.console_log("------------------------------------------------")
                 if "message" in analysis_result_api_response.json():
                     results_error_code = analysis_result_api_response.json()["code"]
@@ -1520,13 +1532,14 @@ if __name__ == "__main__":
             else:
                 sys.exit(0)
         # a response is returned but with original_response status code
-        elif create_scan_api_response is type(ErrorAPIResponse):
+        elif type(create_scan_api_response) is ErrorAPIResponse:
             SOOS.console_log(
                 f"STRUCTURE API STATUS: {create_scan_api_response.code} =====> {create_scan_api_response.message} {more_info}")
             sys.exit(1)
 
         # ## STRUCTURE API CALL SUCCESSFUL - CONTINUE
 
+        print()
         SOOS.console_log("------------------------")
         SOOS.console_log("Analysis Structure Request Created")
         SOOS.console_log("------------------------")
@@ -1542,7 +1555,7 @@ if __name__ == "__main__":
             files_to_exclude=soos.script.files_to_exclude
         )
 
-        if valid_manifests_count > 0:
+        if valid_manifests_count is not None and valid_manifests_count > 0:
             try:
 
                 print()
@@ -1603,9 +1616,13 @@ if __name__ == "__main__":
                     sys.exit(1)
                 else:
                     sys.exit(0)
-        else:  # so the number of manifests is NOT > 0 OR there is an outage
-            SOOS.console_log(
-                "No valid manifests found, cannot continue. For more help, please visit https://soos.io/support")
+        else:  # valid_manifests_count is None (error) or 0
+            if valid_manifests_count is None:
+                SOOS.console_log(
+                    "An error occurred uploading manifests, cannot continue. For more help, please visit https://soos.io/support")
+            else:
+                SOOS.console_log(
+                    "No valid manifests found, cannot continue. For more help, please visit https://soos.io/support")
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
             else:
