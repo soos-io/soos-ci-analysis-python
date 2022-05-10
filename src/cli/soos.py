@@ -98,6 +98,36 @@ class CreateScanAPIResponse:
         for key in create_scan_json_response:
             self.__setattr__(key, create_scan_json_response[key])
 
+class Manifest:
+    name: Optional[str] = None
+    filename: Optional[str] = None
+    packageManager: Optional[str] = None
+    status: Optional[str] = None
+    statusMessage: Optional[str] = None
+
+    def __init__(self, manifest_json):
+        for key in manifest_json:
+            self.__setattr__(key, manifest_json[key])
+
+class AddManifestsResponse:
+    code: Optional[str] = None
+    message: Optional[str] = None
+    statusCode: Optional[int] = None
+    projectId: Optional[str] = None
+    analysisId: Optional[str] = None
+    validManifestCount: Optional[int] = None
+    invalidManifestCount: Optional[int] = None
+    manifests: Optional[List[Manifest]] = None
+
+    def __init__(self, add_manifests_response_json):
+        for key in add_manifests_response_json:
+            if key != "manifests":
+                self.__setattr__(key, add_manifests_response_json[key])
+            elif add_manifests_response_json[key] is not None:
+                manifests = []
+                for manifest_json in add_manifests_response_json[key]:
+                    manifests.append(Manifest(manifest_json))
+                self.__setattr__("manifests", manifests)
 
 class ScanStatusAPIResponse:
     status: Optional[str] = None
@@ -611,7 +641,8 @@ class SOOSManifestAPI:
         return api_url
 
     @staticmethod
-    def exec(soos_context, project_id, analysis_id, manifests, has_more_than_maximum_manifests):
+    def exec(soos_context, project_id, analysis_id, manifests, has_more_than_maximum_manifests) -> Union[
+            AddManifestsResponse, ErrorAPIResponse, None]:
 
         api_url = SOOSManifestAPI.generate_api_url(
             soos_context, project_id, analysis_id, has_more_than_maximum_manifests
@@ -645,8 +676,14 @@ class SOOSManifestAPI:
                 SOOS.console_log("Manifest API Exception Occurred. "
                                  "Attempt " + str(i + 1) + " of " + str(SOOSManifestAPI.API_RETRY_COUNT))
 
-        return response
+        if response is None:
+            return None
 
+        json_response = handle_response(response)
+        if type(json_response) is ErrorAPIResponse:
+            return json_response
+        else:
+            return AddManifestsResponse(add_manifests_response_json=json_response)
 
 class SOOS:
 
@@ -679,9 +716,9 @@ class SOOS:
             recursive=True
         )
 
-    def send_manifests(self, project_id, analysis_id, dirs_to_exclude, files_to_exclude):
+    # returns count of valid manifests that were uploaded
+    def send_manifests(self, project_id, analysis_id, dirs_to_exclude, files_to_exclude) -> int:
 
-        manifests_found_count = 0
         has_more_than_maximum_manifests = False
 
         code_root = SOOS.get_current_directory()
@@ -777,14 +814,18 @@ class SOOS:
                     except Exception as e:
                         SOOS.console_log("Could not send manifest: " + file_name + " due to error: " + str(e))
 
-        if len(manifestArr) > MAX_MANIFESTS:
+        if len(manifestArr) == 0:
+            SOOS.console_log(
+                f"Sorry, we could not locate any manifests under {soos.context.source_code_path} Please check your files and try again.")
+            return 0
+
+        elif len(manifestArr) > MAX_MANIFESTS:
             SOOS.console_log(f"Maximum number of manifests exceeded. Taking first {MAX_MANIFESTS} only.")
-            print()
             has_more_than_maximum_manifests = True
             manifestArr = manifestArr[0:MAX_MANIFESTS]
 
         try:
-            response = SOOSManifestAPI.exec(
+            add_manifests_response = SOOSManifestAPI.exec(
                 soos_context=soos.context,
                 project_id=project_id,
                 analysis_id=analysis_id,
@@ -792,22 +833,29 @@ class SOOS:
                 has_more_than_maximum_manifests=has_more_than_maximum_manifests
             )
 
-            if "message" in response.json():
-                manifest_message = response.json()["message"]
-                manifest_code = response.json()["code"]
-                SOOS.console_log(
-                    f"MANIFEST API STATUS: {response.status_code} || {manifest_code} =====> {manifest_message}")
-                print()
-                manifests_found_count = len(manifestArr)
-            else:
+            if add_manifests_response is None or add_manifests_response.code is None:
                 SOOS.console_log(
                     "There was some error with the Manifest API. For more information, please visit https://soos.io/support")
-                print()
-                manifests_found_count = len(manifestArr)
-        except Exception as e:
-            SOOS.console_log("Could not upload manifest files due to a error: " + str(e))
+                return 0
+            else:
+                SOOS.console_log(
+                    f"Manifest upload status: {add_manifests_response.statusCode} || {add_manifests_response.code} || {add_manifests_response.message}")
+                if add_manifests_response.validManifestCount is not None:
+                    SOOS.console_log(f"Valid manifest count: {add_manifests_response.validManifestCount}")
+                if add_manifests_response.invalidManifestCount is not None:
+                    SOOS.console_log(f"Invalid manifest count: {add_manifests_response.invalidManifestCount}")
+                if add_manifests_response.manifests is not None:
+                    for manifest in add_manifests_response.manifests:
+                        soos.console_log_verbose(f"{manifest.name}: {manifest.statusMessage}")
 
-        return manifests_found_count
+            if add_manifests_response.validManifestCount is not None:
+                return add_manifests_response.validManifestCount
+            else:
+                return 0
+
+        except Exception as e:
+            SOOS.console_log("Could not upload manifest files due to an error: " + str(e))
+            return 0
 
     @staticmethod
     def recursive_glob(treeroot, pattern):
@@ -1487,17 +1535,17 @@ if __name__ == "__main__":
         SOOS.console_log("Scan Status URL: " + create_scan_api_response.scanStatusUrl)
         # Now get ready to send your manifests out for Start Analysis API
 
-        manifests_found_count = soos.send_manifests(
+        valid_manifests_count = soos.send_manifests(
             project_id=create_scan_api_response.projectHash,
             analysis_id=create_scan_api_response.analysisId,
             dirs_to_exclude=soos.script.directories_to_exclude,
             files_to_exclude=soos.script.files_to_exclude
         )
 
-        if manifests_found_count > 0:
-            SOOS.console_log("You have sent a total of {} manifests to be analyzed.".format(manifests_found_count))
+        if valid_manifests_count > 0:
             try:
 
+                print()
                 SOOS.console_log("------------------------")
                 SOOS.console_log("Starting Analysis")
                 SOOS.console_log("------------------------")
@@ -1556,10 +1604,8 @@ if __name__ == "__main__":
                 else:
                     sys.exit(0)
         else:  # so the number of manifests is NOT > 0 OR there is an outage
-
             SOOS.console_log(
-                f"Sorry, we could not locate any manifests under {soos.context.source_code_path} Please check your files and try again.")
-            SOOS.console_log("For more help, please visit https://soos.io/support")
+                "No valid manifests found, cannot continue. For more help, please visit https://soos.io/support")
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
             else:
