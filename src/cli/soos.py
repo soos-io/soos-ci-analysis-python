@@ -1242,7 +1242,7 @@ class SOOSAnalysisScript:
         if script_args.on_failure is not None:
             self.on_failure = str(script_args.on_failure)
         else:
-            self.on_failure = "fail_the_build"
+            self.on_failure = "continue_on_failure"
 
         SOOS.console_log("ON_FAILURE: " + self.on_failure)
 
