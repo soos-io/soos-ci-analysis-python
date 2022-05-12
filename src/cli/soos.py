@@ -716,6 +716,13 @@ class SOOS:
 
         glob_pattern = f"{self.context.source_code_path}/**/{manifest_glob_pattern}"
 
+        # on linux/unix systems, perform case-insensitive search (windows is always case-insensitive)
+        plt = platform.system().lower()
+        if plt != "windows":
+            def case_insensitive_map(c):
+                return '[%s%s]' % (c.lower(), c.upper()) if c.isalpha() else c
+            glob_pattern = ''.join(map(case_insensitive_map, glob_pattern))
+
         return glob.glob(
             glob_pattern,
             recursive=True
