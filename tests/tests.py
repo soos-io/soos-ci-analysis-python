@@ -20,8 +20,8 @@ class GemfileTestCases(unittest.TestCase):
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/gemfile/script.sh"], capture_output=True,
                                  text=True)
         print(process.stdout)
-        self.assertEqual(process.returncode, 1)
-        self.assertEqual(process.stdout.count(test_complete_fail), 1)
+        self.assertEqual(process.returncode, 1, "Invalid return code.")
+        self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
         # self.assertEqual(process.stdout.count(vulnerabilities(4)), 1)
         # self.assertEqual(process.stdout.count(violations(4)), 1)
 
@@ -33,8 +33,8 @@ class DartTestCases(unittest.TestCase):
                                  text=True)
 
         print(process.stdout)
-        self.assertEqual(process.returncode, 0)
-        self.assertEqual(process.stdout.count(test_complete_success), 1)
+        self.assertEqual(process.returncode, 0, "Invalid return code.")
+        self.assertEqual(process.stdout.count(test_complete_success), 1, "Invalid completion message.")
         # self.assertEqual(process.stdout.count(vulnerabilities(2)), 1)
         # self.assertEqual(process.stdout.count(violations(5)), 1)
 
@@ -46,8 +46,8 @@ class GradleTestCases(unittest.TestCase):
                                  text=True)
 
         print(process.stdout)
-        self.assertEqual(process.returncode, 1)
-        self.assertEqual(process.stdout.count(test_complete_fail), 1)
+        self.assertEqual(process.returncode, 1, "Invalid return code.")
+        self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
         # self.assertEqual(process.stdout.count(vulnerabilities(59)), 1)
         # self.assertEqual(process.stdout.count(violations(5)), 1)
 
@@ -59,8 +59,8 @@ class RustTestCases(unittest.TestCase):
                                  text=True)
 
         print(process.stdout)
-        self.assertEqual(process.returncode, 1)
-        self.assertEqual(process.stdout.count(test_complete_fail), 1)
+        self.assertEqual(process.returncode, 1, "Invalid return code.")
+        self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
         # self.assertEqual(process.stdout.count(vulnerabilities(7)), 1)
         # self.assertEqual(process.stdout.count(violations(5)), 1)
 
@@ -72,8 +72,8 @@ class NugetTestCases(unittest.TestCase):
                                  text=True)
 
         print(process.stdout)
-        self.assertEqual(process.returncode, 0)
-        self.assertEqual(process.stdout.count(test_complete_success), 1)
+        self.assertEqual(process.returncode, 0, "Invalid return code.")
+        self.assertEqual(process.stdout.count(test_complete_success), 1, "Invalid completion message.")
         # self.assertEqual(process.stdout.count(vulnerabilities(1)), 1)
         # self.assertEqual(process.stdout.count(violations(5)), 1)
 
@@ -94,8 +94,8 @@ class ComposerTestCases(unittest.TestCase):
                                  text=True)
 
         print(process.stdout)
-        self.assertEqual(process.returncode, 1)
-        self.assertEqual(process.stdout.count(test_complete_fail), 1)
+        self.assertEqual(process.returncode, 1, "Invalid return code.")
+        self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
 
 
 class NPMTestCases(unittest.TestCase):
@@ -104,15 +104,15 @@ class NPMTestCases(unittest.TestCase):
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/with_issues/script.sh"], capture_output=True,
                                  text=True)
         print(process.stdout)
-        self.assertEqual(process.returncode, 1)
-        self.assertEqual(process.stdout.count(test_complete_fail), 1)
+        self.assertEqual(process.returncode, 1, "Invalid return code.")
+        self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
 
     def test_no_issues(self):
         print("testing without issues")
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/no_issues/script.sh"], capture_output=True, text=True)
         print(process.stdout)
-        self.assertEqual(process.returncode, 1)
-        self.assertEqual(process.stdout.count(test_complete_fail), 1)
+        self.assertEqual(process.returncode, 1, "Invalid return code.")
+        self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
 
 
 class ExcludeTestCases(unittest.TestCase):
@@ -121,7 +121,7 @@ class ExcludeTestCases(unittest.TestCase):
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/exclude_files/script.sh"], capture_output=True,
                                  text=True)
         print(process.stdout)
-        self.assertEqual(process.returncode, 1)
+        self.assertEqual(process.returncode, 1, "Invalid return code.")
         files_to_exclude = "pubspec.yaml, *composer.json, cargo* "
         expected_text = f"FILES_TO_EXCLUDE: {files_to_exclude.strip()}"
         self.assertEqual(process.stdout.count(expected_text), 1)
@@ -131,20 +131,20 @@ class ExcludeTestCases(unittest.TestCase):
         self.assertEqual(process.stdout.count('manifests/exclude_files/cargo.toml'), 1)
         self.assertEqual(process.stdout.count('manifests/exclude_files/cargo.lock'), 1)
         self.assertEqual(process.stdout.count('Found manifest file:'), 2)
-        self.assertEqual(process.stdout.count(test_complete_fail), 1)
+        self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
 
     def test_exclude_dirs(self):
         print("testing exclude dirs")
         process = subprocess.run(["sh", f"{os.getcwd()}/manifests/exclude_dirs/script.sh"], capture_output=True,
                                  text=True)
         print(process.stdout)
-        self.assertEqual(process.returncode, 1)
+        self.assertEqual(process.returncode, 1, "Invalid return code.")
         self.assertEqual(process.stdout.count('Skipping file due to dirs_to_exclude:'), 3)
         self.assertEqual(process.stdout.count('manifests/exclude_dirs/exclude/composer.json'), 1)
         self.assertEqual(process.stdout.count('manifests/exclude_dirs/exclude/cargo.toml'), 1)
         self.assertEqual(process.stdout.count('manifests/exclude_dirs/exclude/cargo.lock'), 1)
         self.assertEqual(process.stdout.count('Found manifest file:'), 3)
-        self.assertEqual(process.stdout.count(test_complete_fail), 1)
+        self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
 
 
 # class SarifTestCases(unittest.TestCase):
