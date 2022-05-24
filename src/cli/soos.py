@@ -1400,9 +1400,11 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("--v", dest="verbose_logging",
+        parser.add_argument("-v", dest="verbose_logging",
                             help="Enable verbose logging",
-                            action=argparse.BooleanOptionalAction
+                            type=bool,
+                            default=False,
+                            required=False
                             )
 
         # CI SPECIAL CONTEXT
