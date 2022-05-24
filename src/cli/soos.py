@@ -1250,7 +1250,7 @@ class SOOSAnalysisScript:
 
         SOOS.console_log("ON_FAILURE: " + self.on_failure)
 
-        self.directories_to_exclude = ["node_modules", "soos"]
+        self.directories_to_exclude = ["node_modules", "soos\\workspace"]
 
         if script_args.directories_to_exclude is not None and len(script_args.directories_to_exclude.strip()) > 0:
             SOOS.console_log(f"DIRS_TO_EXCLUDE: {script_args.directories_to_exclude.strip()}")
