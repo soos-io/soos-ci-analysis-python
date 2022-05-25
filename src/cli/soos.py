@@ -8,11 +8,11 @@ import os
 import platform
 import sys
 import time
+import requests
 from datetime import datetime
 from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
 from typing import List, AnyStr, Optional, Any, Dict, Union, Tuple
 
-import requests
 
 SCRIPT_VERSION = "1.5.4"
 SCAN_TYPE = "sca"
