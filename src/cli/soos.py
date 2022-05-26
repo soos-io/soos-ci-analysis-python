@@ -952,6 +952,7 @@ class SOOS:
                     if self.script.on_failure == SOOSOnFailure.CONTINUE_ON_FAILURE:
                         return
                     else:
+                        soos.console_log_verbose("Failures reported, failing build.")
                         sys.exit(1)
 
                 elif analysis_status.lower() == "error":
@@ -1321,7 +1322,7 @@ class SOOSAnalysisScript:
                                  "fail_the_build: Fail The Build ** Default Value, "
                                  "continue_on_failure: Continue On Failure",
                             type=str,
-                            default="fail_the_build",
+                            default="continue_on_failure",
                             required=False
                             )
 
