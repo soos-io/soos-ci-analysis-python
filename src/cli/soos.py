@@ -29,10 +29,11 @@ class GithubVersionChecker:
         except Exception as e:
             return None
 
+print(__name__)
 if __name__ == "__main__":
-  sca.SOOS.console_log("Checking Script Version.....")
-  latest_version, github_url = GithubVersionChecker.get_latest_version()
-  current_version = f"v{version.get_current_version()}"
+    sca.SOOS.console_log("Checking Script Version.....")
+    latest_version, github_url = GithubVersionChecker.get_latest_version()
+    current_version = f"v{version.get_current_version()}"
 
 #   if latest_version is not None and latest_version != current_version:
 #     sca.SOOS.console_log(
@@ -40,4 +41,4 @@ if __name__ == "__main__":
 #   else:
 #     sca.SOOS.console_log(f"Your current version {current_version} is the latest version available")
 
-  sca.entry_point()
+    sca.entry_point()
