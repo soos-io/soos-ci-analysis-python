@@ -34,10 +34,10 @@ if __name__ == "__main__":
   latest_version, github_url = GithubVersionChecker.get_latest_version()
   current_version = f"v{version.get_current_version()}"
 
-  if latest_version is not None and latest_version != current_version:
-    sca.SOOS.console_log(
-        f"Your current version {current_version} is outdated. The latest version available is {latest_version}. Please update to the latest version here: {github_url}")
-  else:
-    sca.SOOS.console_log(f"Your current version {current_version} is the latest version available")
+#   if latest_version is not None and latest_version != current_version:
+#     sca.SOOS.console_log(
+#         f"Your current version {current_version} is outdated. The latest version available is {latest_version}. Please update to the latest version here: {github_url}")
+#   else:
+#     sca.SOOS.console_log(f"Your current version {current_version} is the latest version available")
 
   sca.entry_point()
