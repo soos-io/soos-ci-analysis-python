@@ -738,7 +738,7 @@ class SOOS:
                     # Directories to Exclude
                     if fnmatch.fnmatch(pure_directory, exclude_dir) or exclude_dir in pure_directory:
                         # skip this manifest
-                        SOOS.console_log_verbose("Skipping file due to dirs_to_exclude: " + file_name)
+                        soos.console_log_verbose("Skipping file due to dirs_to_exclude: " + file_name)
                         exclude = True
                         continue
 
@@ -761,7 +761,7 @@ class SOOS:
                     if fnmatch.fnmatch(pure_filename, exclude_file) or exclude_file in pure_filename:
                         # skip this manifest
 
-                        SOOS.console_log_verbose("Skipping file due to files_to_exclude: " + file_name)
+                        soos.console_log_verbose("Skipping file due to files_to_exclude: " + file_name)
 
                         exclude = True
                         continue
@@ -832,7 +832,7 @@ class SOOS:
                         SOOS.console_log(f"Invalid manifest count: {add_manifests_response.invalidManifestCount}")
                     if add_manifests_response.manifests is not None:
                         for manifest in add_manifests_response.manifests:
-                            SOOS.console_log_verbose(f"{manifest.name}: {manifest.statusMessage}")
+                            soos.console_log_verbose(f"{manifest.name}: {manifest.statusMessage}")
 
             if (type(add_manifests_response) is AddManifestsResponse
                     and add_manifests_response.validManifestCount is not None):
@@ -926,7 +926,7 @@ class SOOS:
                     if self.script.on_failure == SOOSOnFailure.CONTINUE_ON_FAILURE:
                         return
                     else:
-                        SOOS.console_log_verbose("Failures reported, failing build.")
+                        soos.console_log_verbose("Failures reported, failing build.")
                         sys.exit(1)
 
                 elif analysis_status.lower() == "error":
@@ -1449,9 +1449,10 @@ class SOOSAnalysisScript:
 
         return parser
 
+# Initialize SOOS
+soos = SOOS()
+
 def entry_point():
-    # Initialize SOOS
-    soos = SOOS()
     more_info = " For more information visit https://soos.io/status/"
 
     # Register and load script arguments
