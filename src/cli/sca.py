@@ -635,7 +635,7 @@ class SOOSManifestAPI:
                     url=api_url,
                     files=dict(files),
                     data=body,
-                    headers={'x-soos-apikey': SOOS.context.api_key,
+                    headers={'x-soos-apikey': soos.context.api_key,
                              },
 
                 )
@@ -800,7 +800,7 @@ class SOOS:
 
         if len(manifestArr) == 0:
             SOOS.console_log(
-                f"Sorry, we could not locate any manifests under {SOOS.context.source_code_path} Please check your files and try again.")
+                f"Sorry, we could not locate any manifests under {soos.context.source_code_path} Please check your files and try again.")
             return 0
 
         elif len(manifestArr) > MAX_MANIFESTS:
