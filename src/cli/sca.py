@@ -453,12 +453,12 @@ class SOOSContext:
         if self.client_id is None or len(self.client_id) == 0:
             SOOS.console_log("REQUIRED PARAMETER IS MISSING: SOOS_CLIENT_ID")
             SOOS.console_log(
-                "CLIENT_ID, if you do not already have one, will be provided with a subscription to SOOS.io services.")
+                "CLIENT_ID, found at https://app.soos.io/integrate/sca")
 
         if self.api_key is None or len(self.api_key) == 0:
             SOOS.console_log("REQUIRED PARAMETER IS MISSING: SOOS_API_KEY")
             SOOS.console_log(
-                "API_KEY, if you do not already have one, will be provided with a subscription to SOOS.io services.")
+                "API_KEY, found at https://app.soos.io/integrate/sca")
 
 
 class SOOSScanAPI:
@@ -526,7 +526,7 @@ class SOOSScanAPI:
                 json_response = handle_response(api_response)
                 if type(json_response) is ErrorAPIResponse:
                     create_scan_response = json_response
-                    error_message = f"A Create Structure API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}"
+                    error_message = f"A Create Scan MetaData API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}"
                     SOOS.console_log(f"{error_message}\n{json_response.code}-{json_response.message}")
                 else:
                     create_scan_response = CreateScanAPIResponse(create_scan_json_response=json_response)
@@ -810,7 +810,7 @@ class SOOS:
 
         try:
             add_manifests_response = SOOSManifestAPI.exec(
-                soos_context=SOOS.context,
+                soos_context=soos.context,
                 project_id=project_id,
                 analysis_id=analysis_id,
                 manifests=manifestArr,
@@ -1490,7 +1490,7 @@ def entry_point():
         # structure_response = SOOSStructureAPI.exec(soos.context)
 
         if create_scan_api_response is None:
-            SOOS.console_log("A Create Scan API error occurred: Could not execute API." + more_info)
+            SOOS.console_log("A Create Scan Metadata API error occurred: Could not execute API." + more_info)
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
             else:
@@ -1498,14 +1498,14 @@ def entry_point():
         # a response is returned but with original_response status code
         elif type(create_scan_api_response) is ErrorAPIResponse:
             SOOS.console_log(
-                f"STRUCTURE API STATUS: {create_scan_api_response.code} =====> {create_scan_api_response.message} {more_info}")
+                f"SCAN METADATA API STATUS: {create_scan_api_response.code} =====> {create_scan_api_response.message} {more_info}")
             sys.exit(1)
 
-        # ## STRUCTURE API CALL SUCCESSFUL - CONTINUE
+        # ## SCAN METADATA API CALL SUCCESSFUL - CONTINUE
 
         print()
         SOOS.console_log("------------------------")
-        SOOS.console_log("Analysis Structure Request Created")
+        SOOS.console_log("Scan Metadata Request Created")
         SOOS.console_log("------------------------")
         SOOS.console_log("Analysis Id: " + create_scan_api_response.analysisId)
         SOOS.console_log("Project Id:  " + create_scan_api_response.projectHash)
