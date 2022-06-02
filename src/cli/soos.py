@@ -12,13 +12,14 @@ import requests
 from datetime import datetime
 from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
 from typing import List, AnyStr, Optional, Any, Dict, Union, Tuple
-from cli import version
 
 
 SCAN_TYPE = "sca"
 ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 MAX_MANIFESTS = 50
 
+with open(os.path.join(os.path.dirname(__file__), "VERSION.txt")) as version_file:
+  SCRIPT_VERSION = version_file.read().strip()
 
 class GithubVersionChecker:
     GITHUB_LATEST_RELEASE_URL = "https://api.github.com/repos/soos-io/soos-ci-analysis-python/releases/latest"
@@ -195,7 +196,7 @@ class SOOSStructureAPI:
             "projectName": soos_context.project_name,
             "name": datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
             "integrationType": soos_context.integration_type,
-            "scriptVersion": version.get_current_version()
+            "scriptVersion": SCRIPT_VERSION
         }
 
         if soos_context.branch_uri is not None:
@@ -531,7 +532,7 @@ class SOOSScanAPI:
                 "projectName": context.project_name,
                 "name": datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
                 "integrationType": context.integration_type,
-                "scriptVersion": version.get_current_version(),
+                "scriptVersion": SCRIPT_VERSION,
             }
 
             set_body_value(start_scan_data, 'toolName', toolName)
@@ -1654,7 +1655,7 @@ def entry_point():
 if __name__ == "__main__":
     SOOS.console_log("Checking Script Version.....")
     latest_version, github_url = GithubVersionChecker.get_latest_version()
-    current_version = f"v{version.get_current_version()}"
+    current_version = f"v{SCRIPT_VERSION}"
 
     if latest_version is not None and latest_version != current_version:
         SOOS.console_log(

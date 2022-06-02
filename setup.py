@@ -10,10 +10,13 @@ import pathlib
 from setuptools import setup
 
 here = pathlib.Path(__file__).parent.resolve()
-version = {}
-with open(os.path.join(here, "src", "cli", "version.py")) as fp:
-  exec(fp.read(), version)
+# https://packaging.python.org/en/latest/guides/single-sourcing-package-version/
+with open(os.path.join(here, "src", "cli", "VERSION.txt")) as version_file:
+  version = version_file.read().strip()
 
 setup(
-  version=version['__version__'],
+  version=version,
+  package_data={
+    "": ["VERSION.txt"]
+  },
 )
