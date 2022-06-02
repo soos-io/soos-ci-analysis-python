@@ -1654,12 +1654,13 @@ def entry_point():
 
 if __name__ == "__main__":
     SOOS.console_log("Checking Script Version.....")
+    PyPI_URL = "https://pypi.org/project/soos-sca"
     latest_version, github_url = GithubVersionChecker.get_latest_version()
     current_version = f"v{SCRIPT_VERSION}"
 
     if latest_version is not None and latest_version != current_version:
         SOOS.console_log(
-            f"Your current version {current_version} is outdated. The latest version available is {latest_version}. Please update to the latest version here: {github_url}")
+            f"Your current version {current_version} is outdated! The latest version available is {latest_version}. Please update to the latest version on GitHub ({github_url}) or PyPI ({PyPI_URL}).")
     else:
         SOOS.console_log(f"Your current version {current_version} is the latest version available")
 
