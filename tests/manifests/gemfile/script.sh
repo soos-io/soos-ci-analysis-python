@@ -1,6 +1,4 @@
 #!/bin/sh
-echo "GEM start"
-
 
 SOOS_PROJECT_NAME="SCA Python Integration Test"
 # BUILD/BRANCH SPECIFIC ARGS:
@@ -25,16 +23,8 @@ SOOS_API_BASE_URL="https://dev-api.soos.io/api/"
 
 cd ${WORKSPACE}
 
-echo "GEM python3 venv"
 python3 -m venv venv
+source venv/bin/activate
 
-echo "GEM python venv activate"
-./venv/Scripts/activate
-
-echo "GEM pip install"
 pip3 install -r ../../../src/cli/requirements.txt
-
-echo "GEM python3 soos"
 python3 ../../../src/cli/soos.py -m="${SOOS_MODE}" -of="${SOOS_ON_FAILURE}" -dte="${SOOS_DIRS_TO_EXCLUDE}" -fte="${SOOS_FILES_TO_EXCLUDE}" -wd="${SOOS_CHECKOUT_DIR}" -armw=${SOOS_ANALYSIS_RESULT_MAX_WAIT} -arpi=${SOOS_ANALYSIS_RESULT_POLLING_INTERVAL} -buri="${SOOS_API_BASE_URL}" -scp="${SOOS_CHECKOUT_DIR}" -pn="${SOOS_PROJECT_NAME}" -ch="${SOOS_COMMIT_HASH}" -bn="${SOOS_BRANCH_NAME}" -bruri="${SOOS_BRANCH_URI}" -bldver="${SOOS_BUILD_VERSION}" -blduri="${SOOS_BUILD_URI}" -oe="${SOOS_OPERATING_ENVIRONMENT}" -intn="${SOOS_INTEGRATION_NAME}"
-
-echo "GEM end"
