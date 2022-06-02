@@ -29,7 +29,7 @@ echo "GEM python3 venv"
 python3 -m venv venv
 
 echo "GEM python venv activate"
-source venv/bin/activate
+./venv/Scripts/activate
 
 echo "GEM pip install"
 pip3 install -r ../../../src/cli/requirements.txt
