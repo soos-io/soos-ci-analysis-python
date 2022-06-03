@@ -1320,8 +1320,8 @@ class SOOSAnalysisScript:
 
         parser.add_argument("-of", dest="on_failure",
                             help="On Failure: "
-                                 "fail_the_build: Fail The Build ** Default Value, "
-                                 "continue_on_failure: Continue On Failure",
+                                 "fail_the_build: Fail The Build "
+                                 "continue_on_failure: Continue On Failure ** Default Value",
                             type=str,
                             default="continue_on_failure",
                             required=False
