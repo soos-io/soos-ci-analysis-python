@@ -14,11 +14,12 @@ from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Fo
 from typing import List, AnyStr, Optional, Any, Dict, Union, Tuple
 
 
-SCRIPT_VERSION = "1.5.5"
 SCAN_TYPE = "sca"
 ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 MAX_MANIFESTS = 50
 
+with open(os.path.join(os.path.dirname(__file__), "VERSION.txt")) as version_file:
+  SCRIPT_VERSION = version_file.read().strip()
 
 class GithubVersionChecker:
     GITHUB_LATEST_RELEASE_URL = "https://api.github.com/repos/soos-io/soos-ci-analysis-python/releases/latest"
@@ -479,12 +480,12 @@ class SOOSContext:
         if self.client_id is None or len(self.client_id) == 0:
             SOOS.console_log("REQUIRED PARAMETER IS MISSING: SOOS_CLIENT_ID")
             SOOS.console_log(
-                "CLIENT_ID, if you do not already have one, will be provided with a subscription to SOOS.io services.")
+                "CLIENT_ID, found at https://app.soos.io/integrate/sca")
 
         if self.api_key is None or len(self.api_key) == 0:
             SOOS.console_log("REQUIRED PARAMETER IS MISSING: SOOS_API_KEY")
             SOOS.console_log(
-                "API_KEY, if you do not already have one, will be provided with a subscription to SOOS.io services.")
+                "API_KEY, found at https://app.soos.io/integrate/sca")
 
 
 class SOOSScanAPI:
@@ -552,7 +553,7 @@ class SOOSScanAPI:
                 json_response = handle_response(api_response)
                 if type(json_response) is ErrorAPIResponse:
                     create_scan_response = json_response
-                    error_message = f"A Create Structure API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}"
+                    error_message = f"A Create Scan MetaData API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}"
                     SOOS.console_log(f"{error_message}\n{json_response.code}-{json_response.message}")
                 else:
                     create_scan_response = CreateScanAPIResponse(create_scan_json_response=json_response)
@@ -1475,26 +1476,10 @@ class SOOSAnalysisScript:
 
         return parser
 
+# Initialize SOOS
+soos = SOOS()
 
-if __name__ == "__main__":
-
-    # if ((3, 0) <= sys.version_info <= (3, 9)):
-    if sys.version_info < (3, 6):
-        print("**** SOOS FATAL ERROR: Python Version 3.6 or higher is required ****")
-        sys.exit(1)
-
-    SOOS.console_log("Checking Script Version.....")
-    latest_version, github_url = GithubVersionChecker.get_latest_version()
-    current_version = f"v{SCRIPT_VERSION}"
-
-    if latest_version is not None and latest_version != current_version:
-        SOOS.console_log(
-            f"Your current version {current_version} is outdated. The latest version available is {latest_version}. Please update to the latest version here: {github_url}")
-    else:
-        SOOS.console_log(f"Your current version {current_version} is the latest version available")
-
-    # Initialize SOOS
-    soos = SOOS()
+def entry_point():
     more_info = " For more information visit https://soos.io/status/"
 
     # Register and load script arguments
@@ -1503,7 +1488,6 @@ if __name__ == "__main__":
 
     soos.script.load_script_arguments(script_args=args)
     load_context_result = soos.context.load(script_args=args)
-    MANIFEST_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/manifests"
 
     if load_context_result is False:
 
@@ -1533,7 +1517,7 @@ if __name__ == "__main__":
         # structure_response = SOOSStructureAPI.exec(soos.context)
 
         if create_scan_api_response is None:
-            SOOS.console_log("A Create Scan API error occurred: Could not execute API." + more_info)
+            SOOS.console_log("A Create Scan Metadata API error occurred: Could not execute API." + more_info)
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
             else:
@@ -1541,14 +1525,14 @@ if __name__ == "__main__":
         # a response is returned but with original_response status code
         elif type(create_scan_api_response) is ErrorAPIResponse:
             SOOS.console_log(
-                f"STRUCTURE API STATUS: {create_scan_api_response.code} =====> {create_scan_api_response.message} {more_info}")
+                f"SCAN METADATA API STATUS: {create_scan_api_response.code} =====> {create_scan_api_response.message} {more_info}")
             sys.exit(1)
 
-        # ## STRUCTURE API CALL SUCCESSFUL - CONTINUE
+        # ## SCAN METADATA API CALL SUCCESSFUL - CONTINUE
 
         print()
         SOOS.console_log("------------------------")
-        SOOS.console_log("Analysis Structure Request Created")
+        SOOS.console_log("Scan Metadata Request Created")
         SOOS.console_log("------------------------")
         SOOS.console_log("Analysis Id: " + create_scan_api_response.analysisId)
         SOOS.console_log("Project Id:  " + create_scan_api_response.projectHash)
@@ -1668,4 +1652,16 @@ if __name__ == "__main__":
         else:
             sys.exit(0)
 
-######
+if __name__ == "__main__":
+    SOOS.console_log("Checking Script Version.....")
+    PyPI_URL = "https://pypi.org/project/soos-sca"
+    latest_version, github_url = GithubVersionChecker.get_latest_version()
+    current_version = f"v{SCRIPT_VERSION}"
+
+    if latest_version is not None and latest_version != current_version:
+        SOOS.console_log(
+            f"Your current version {current_version} is outdated! The latest version available is {latest_version}. Please update to the latest version on GitHub ({github_url}) or PyPI ({PyPI_URL}).")
+    else:
+        SOOS.console_log(f"Your current version {current_version} is the latest version available")
+
+    entry_point()
