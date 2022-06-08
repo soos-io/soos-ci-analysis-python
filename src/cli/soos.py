@@ -220,6 +220,9 @@ class SOOSStructureAPI:
         if soos_context.integration_name is not None:
             structure_api_data["integrationName"] = soos_context.integration_name
 
+        if soos_context.app_version is not None:
+            structure_api_data["appVersion"] = soos_context.app_version
+
         for i in range(0, SOOSStructureAPI.API_RETRY_COUNT):
             try:
                 kernel = requests.post(
@@ -264,6 +267,7 @@ class SOOSContext:
         self.build_version = None
         self.build_uri = None
         self.operating_environment = None
+        self.app_version = None
         self.integration_name = None
         self.generate_sarif_report = False
         self.github_pat = None
@@ -434,6 +438,10 @@ class SOOSContext:
             self.operating_environment = '{system} {release} {architecture}'.format(system=platform.system(), release=platform.release(), architecture=platform.architecture()[0])
         SOOS.console_log("SOOS_OPERATING_ENVIRONMENT Parameter Loaded: " + self.operating_environment)
 
+        if script_args.app_version is not None and len(script_args.app_version) > 0:
+            self.app_version = str(script_args.app_version)
+            SOOS.console_log("SOOS_APP_VERSION Parameter Loaded: " + self.app_version)
+
         if script_args.integration_name is not None:
             if len(script_args.integration_name) > 0:
                 self.integration_name = str(script_args.integration_name)
@@ -521,9 +529,8 @@ class SOOSScanAPI:
         return url
 
     @staticmethod
-    def create_scan_metadata(context: SOOSContext, **kwargs) -> Union[CreateScanAPIResponse, ErrorAPIResponse]:
+    def create_scan_metadata(context: SOOSContext) -> Union[CreateScanAPIResponse, ErrorAPIResponse]:
         create_scan_response = None
-        toolName = kwargs.get('tool_name')
 
         try:
             url = SOOSScanAPI.generate_scan_api_url(context=context, url_type="create")
@@ -535,7 +542,6 @@ class SOOSScanAPI:
                 "scriptVersion": SCRIPT_VERSION,
             }
 
-            set_body_value(start_scan_data, 'toolName', toolName)
             set_body_value(start_scan_data, 'commitHash', context.commit_hash)
             set_body_value(start_scan_data, 'branch', context.branch_name)
             set_body_value(start_scan_data, 'branchUri', context.branch_uri)
@@ -543,6 +549,7 @@ class SOOSScanAPI:
             set_body_value(start_scan_data, 'buildUri', context.build_uri)
             set_body_value(start_scan_data, 'operatingEnvironment', context.operating_environment)
             set_body_value(start_scan_data, 'integrationName', context.integration_name)
+            set_body_value(start_scan_data, 'appVersion', context.app_version)
 
             headers = generate_header(api_key=context.api_key, content_type="application/json")
             data = json.dumps(start_scan_data)
@@ -1308,7 +1315,7 @@ class SOOSAnalysisScript:
 
         # SCRIPT PARAMETERS
 
-        parser.add_argument("-m", dest="mode",
+        parser.add_argument("--mode", "-m", dest="mode",
                             help="Mode of operation: "
                                  "run_and_wait: Run Analysis & Wait ** Default Value, "
                                  "async_init: Async Init, "
@@ -1318,7 +1325,7 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("-of", dest="on_failure",
+        parser.add_argument("--onFailure", "-of", dest="on_failure",
                             help="On Failure: "
                                  "fail_the_build: Fail The Build "
                                  "continue_on_failure: Continue On Failure ** Default Value",
@@ -1327,7 +1334,7 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("-dte", dest="directories_to_exclude",
+        parser.add_argument("--directoriesToExclude", "-dte", dest="directories_to_exclude",
                             help="Listing of directories (relative to ./) to exclude from the search for manifest files.\n"
                                  "Example - Correct: bin/start/\n"
                                  "Example - Incorrect: ./bin/start/\n"
@@ -1336,7 +1343,7 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("-fte", dest="files_to_exclude",
+        parser.add_argument("--filesToExclude", "-fte", dest="files_to_exclude",
                             help="Listing of files (relative to ./) to exclude from the search for manifest files.\n"
                                  "Example - Correct: bin/start/requirements.txt\n"
                                  "Example - Incorrect: ./bin/start/requirements.txt\n"
@@ -1345,7 +1352,7 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("-wd", dest="working_directory",
+        parser.add_argument("--workingDirectory", "-wd", dest="working_directory",
                             help="Absolute path where SOOS may write and read persistent files for the given build.\n"
                                  "Example - Correct: /tmp/workspace/\n"
                                  "Example - Incorrect: ./bin/start/\n"
@@ -1354,14 +1361,14 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("-armw", dest="analysis_result_max_wait",
+        parser.add_argument("--resultMaxWait", "-armw", dest="analysis_result_max_wait",
                             help="Maximum seconds to wait for Analysis Result. Default 300.",
                             type=int,
                             default=300,
                             required=False
                             )
 
-        parser.add_argument("-arpi", dest="analysis_result_polling_interval",
+        parser.add_argument("--resultPollingInterval", "-arpi", dest="analysis_result_polling_interval",
                             help="Polling interval (in seconds) for analysis result completion (success/failure). "
                                  "Min value: 10",
                             type=int,
@@ -1371,38 +1378,38 @@ class SOOSAnalysisScript:
 
         # CONTEXT PARAMETERS
 
-        parser.add_argument("-buri", dest="base_uri",
+        parser.add_argument("--baseUri", "-buri", dest="base_uri",
                             help="API URI Path. Default Value: https://api.soos.io/api/",
                             type=str,
                             default="https://api.soos.io/api/",
                             required=False
                             )
 
-        parser.add_argument("-scp", dest="source_code_path",
+        parser.add_argument("--sourceCodePath", "-scp", dest="source_code_path",
                             help="Root path to begin recursive search for manifests. Default Value: ./",
                             type=str,
                             required=False
                             )
 
-        parser.add_argument("-pn", dest="project_name",
+        parser.add_argument("--projectName", "-pn", dest="project_name",
                             help="Project name for tracking results",
                             type=str,
                             required=False
                             )
 
-        parser.add_argument("-cid", dest="client_id",
+        parser.add_argument("--clientId", "-cid", dest="client_id",
                             help="API Client ID",
                             type=str,
                             required=False
                             )
 
-        parser.add_argument("-akey", dest="api_key",
+        parser.add_argument("--apiKey", "-akey", dest="api_key",
                             help="API Key",
                             type=str,
                             required=False
                             )
 
-        parser.add_argument("-v", dest="verbose_logging",
+        parser.add_argument("--verbose", "-v", dest="verbose_logging",
                             help="Enable verbose logging",
                             type=bool,
                             default=False,
@@ -1411,49 +1418,56 @@ class SOOSAnalysisScript:
 
         # CI SPECIAL CONTEXT
 
-        parser.add_argument("-ch", dest="commit_hash",
+        parser.add_argument("--commitHash", "-ch", dest="commit_hash",
                             help="Commit Hash Value",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("-bn", dest="branch_name",
+        parser.add_argument("--branchName", "-bn", dest="branch_name",
                             help="Branch Name",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("-bruri", dest="branch_uri",
+        parser.add_argument("--branchUri", "-bruri", dest="branch_uri",
                             help="Branch URI",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("-bldver", dest="build_version",
+        parser.add_argument("--buildVersion", "-bldver", dest="build_version",
                             help="Build Version",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("-blduri", dest="build_uri",
+        parser.add_argument("--buildUri", "-blduri", dest="build_uri",
                             help="Build URI",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("-oe", dest="operating_environment",
+        parser.add_argument("--operatingEnvironment", "-oe", dest="operating_environment",
                             help="Operating Environment",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("-intn", dest="integration_name",
+        parser.add_argument("--appVersion", "-appver", dest="app_version",
+                            help="App Version. Intended for internal use only.",
+                            type=str,
+                            default=None,
+                            required=False
+                            )
+
+        parser.add_argument("--integrationName", "-intn", dest="integration_name",
                             help="Integration Name (e.g. Provider)",
                             type=str,
                             default=None,
@@ -1513,7 +1527,7 @@ def entry_point():
     if soos.script.mode in (SOOSModeOfOperation.RUN_AND_WAIT, SOOSModeOfOperation.ASYNC_INIT):
 
         # Make API call and store response, assuming that status code < 299, ie successful call.
-        create_scan_api_response = SOOSScanAPI.create_scan_metadata(context=soos.context, tool_name=None)
+        create_scan_api_response = SOOSScanAPI.create_scan_metadata(context=soos.context)
         # structure_response = SOOSStructureAPI.exec(soos.context)
 
         if create_scan_api_response is None:
