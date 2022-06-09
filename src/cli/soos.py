@@ -220,6 +220,9 @@ class SOOSStructureAPI:
         if soos_context.integration_name is not None:
             structure_api_data["integrationName"] = soos_context.integration_name
 
+        if soos_context.integration_type is not None:
+            structure_api_data["integrationType"] = soos_context.integration_type
+
         if soos_context.app_version is not None:
             structure_api_data["appVersion"] = soos_context.app_version
 
@@ -269,11 +272,9 @@ class SOOSContext:
         self.operating_environment = None
         self.app_version = None
         self.integration_name = None
+        self.integration_type = "Script"
         self.generate_sarif_report = False
         self.github_pat = None
-
-        # INTENTIONALLY HARDCODED
-        self.integration_type = "Script"
 
     def __set_source_code_path__(self, source_code_directory):
         """
@@ -442,10 +443,13 @@ class SOOSContext:
             self.app_version = str(script_args.app_version)
             SOOS.console_log("SOOS_APP_VERSION Parameter Loaded: " + self.app_version)
 
-        if script_args.integration_name is not None:
-            if len(script_args.integration_name) > 0:
-                self.integration_name = str(script_args.integration_name)
-                SOOS.console_log("SOOS_INTEGRATION_NAME Parameter Loaded: " + self.integration_name)
+        if script_args.integration_name is not None and len(script_args.integration_name) > 0:
+            self.integration_name = str(script_args.integration_name)
+            SOOS.console_log("SOOS_INTEGRATION_NAME Parameter Loaded: " + self.integration_name)
+
+        if script_args.integration_type is not None and len(script_args.integration_type) > 0:
+            self.integration_type = str(script_args.integration_type)
+            SOOS.console_log("SOOS_INTEGRATION_TYPE Parameter Loaded: " + self.integration_type)
 
         if script_args.generate_sarif_report is True:
             self.generate_sarif_report = script_args.generate_sarif_report
@@ -1469,6 +1473,13 @@ class SOOSAnalysisScript:
 
         parser.add_argument("--integrationName", "-intn", dest="integration_name",
                             help="Integration Name (e.g. Provider)",
+                            type=str,
+                            default=None,
+                            required=False
+                            )
+
+        parser.add_argument("--integrationType", "-intt", dest="integration_type",
+                            help="Integration Type. Intended for internal use only.",
                             type=str,
                             default=None,
                             required=False
