@@ -23,6 +23,8 @@ jobs:
         run: shasum -a 256 src/cli/soos.py > src/cli/soos.sha256
       - name: shasum requirements
         run: shasum -a 256 src/cli/requirements.txt > src/cli/requirements.sha256
+      - name: shasum VERSION
+        run: shasum -a 256 src/cli/VERSION.txt > src/cli/VERSION.sha256
       # Runs a single command using the runners shell
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -30,6 +32,8 @@ jobs:
           draft: true
           prerelease: false
           files: |
+            src/cli/VERSION.txt
+            src/cli/VERSION.sha256
             src/cli/requirements.txt
             src/cli/requirements.sha256
             src/cli/soos.py
