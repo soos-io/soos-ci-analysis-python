@@ -774,7 +774,7 @@ class SOOS:
 
                 for exclude_dir in dirs_to_exclude:
                     # Directories to Exclude
-                    if fnmatch.fnmatch(pure_directory, exclude_dir) or exclude_dir in pure_directory:
+                    if os.path.normpath(exclude_dir) in pure_directory.replace(soos.context.source_code_path, ""):
                         # skip this manifest
                         soos.console_log_verbose("Skipping file due to dirs_to_exclude: " + file_name)
                         exclude = True
@@ -1263,7 +1263,7 @@ class SOOSAnalysisScript:
 
         SOOS.console_log("ON_FAILURE: " + self.on_failure)
 
-        self.directories_to_exclude = ["node_modules", "soos\\workspace"]
+        self.directories_to_exclude = ["node_modules", "soos"]
 
         if script_args.directories_to_exclude is not None and len(script_args.directories_to_exclude.strip()) > 0:
             SOOS.console_log(f"DIRS_TO_EXCLUDE: {script_args.directories_to_exclude.strip()}")
