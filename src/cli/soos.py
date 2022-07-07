@@ -17,6 +17,8 @@ from typing import List, AnyStr, Optional, Any, Dict, Union, Tuple
 SCAN_TYPE = "sca"
 ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 MAX_MANIFESTS = 50
+SCAN_STATUS_ERROR = "Error"
+SCAN_STATUS_INCOMPLETE = "Incomplete"
 
 with open(os.path.join(os.path.dirname(__file__), "VERSION.txt")) as version_file:
   SCRIPT_VERSION = version_file.read().strip()
@@ -1067,6 +1069,54 @@ class SOOSAnalysisResultAPI:
 
         return analysis_result_response
 
+class SOOSPatchStatusAPI:
+    API_RETRY_COUNT = 3
+
+    URI_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/projects/{project_hash}/branches/{branch_hash}/scan-types/{scan_type}/scans/{scan_id}"
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def generate_api_url(soos_context, create_scan_api_response):
+        url = SOOSPatchStatusAPI.URI_TEMPLATE
+        url = url.replace("{soos_base_uri}", soos_context.base_uri)
+        url = url.replace("{soos_client_id}", soos_context.client_id)
+        url = url.replace("{project_hash}", create_scan_api_response.projectHash)
+        url = url.replace("{branch_hash}", create_scan_api_response.branchHash)
+        url = url.replace("{scan_type}", SCAN_TYPE)
+        url = url.replace("{scan_id}", create_scan_api_response.analysisId)
+        return url
+
+    @staticmethod
+    def exec(soos_context, create_scan_api_response, status, message):
+
+        api_url = SOOSPatchStatusAPI.generate_api_url(soos_context, create_scan_api_response)
+
+        patch_status_data = {
+            "Status": status,
+            "Message": message
+        }
+
+        for i in range(0, SOOSPatchStatusAPI.API_RETRY_COUNT):
+            try:
+                response = requests.patch(
+                    url=api_url,
+                    data=json.dumps(patch_status_data),
+                    headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'})
+
+                json_response = handle_response(api_response=response)
+
+                if type(json_response) is ErrorAPIResponse:
+                    raise Exception(f"{json_response.code}-{json_response.message}")
+
+                break
+
+            except Exception as e:
+                SOOS.console_log("Error updating scan status. "
+                                 "Attempt " + str(i + 1) + " of " + str(SOOSPatchStatusAPI.API_RETRY_COUNT) + "::" +
+                                 "Exception: " + str(e)
+                                 )
 
 class SOOSSARIFReport:
     API_RETRY_COUNT = 3
@@ -1589,6 +1639,9 @@ def entry_point():
                     analysis_code = response.json()["code"]
                     analysis_message = response.json()["message"]
                     SOOS.console_log(f"ANALYSIS API STATUS: {analysis_code} =====> {analysis_message} {more_info}")
+                    # 500 code means SOOS server had an unexpected error and probably didn't update scan status
+                    if response.status_code >= 500:
+                        SOOSPatchStatusAPI.exec(soos.context, create_scan_api_response, SCAN_STATUS_ERROR, "An unexpected error occurred while starting the scan.")
                     sys.exit(1)
 
                 else:
@@ -1634,11 +1687,14 @@ def entry_point():
                     sys.exit(0)
         else:  # valid_manifests_count is None (error) or 0
             if valid_manifests_count is None:
-                SOOS.console_log(
-                    "An error occurred uploading manifests, cannot continue. For more help, please visit https://soos.io/support")
+                scan_status = SCAN_STATUS_ERROR
+                scan_message = "An error occurred uploading manifests, cannot continue. For more help, please visit https://soos.io/support"
+                SOOS.console_log(scan_message)
             else:
-                SOOS.console_log(
-                    "No valid manifests found, cannot continue. For more help, please visit https://soos.io/support")
+                scan_status = SCAN_STATUS_INCOMPLETE
+                scan_message = "No valid manifests found, cannot continue. For more help, please visit https://soos.io/support"
+                SOOS.console_log(scan_message)
+            SOOSPatchStatusAPI.exec(soos.context, create_scan_api_response, scan_status, scan_message)
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
             else:
