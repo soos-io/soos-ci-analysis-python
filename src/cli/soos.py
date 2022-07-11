@@ -400,8 +400,8 @@ class SOOSContext:
             self.api_key = str(script_args.api_key)
             SOOS.console_log("SOOS_API_KEY Parameter Loaded: SECRET")
 
-        if script_args.verbose_logging is True:
-            self.verbose_logging = script_args.verbose_logging
+        if script_args.logging_verbose is True or script_args.logging_verbosity is True:
+            self.verbose_logging = True
             SOOS.console_log("SOOS_VERBOSE_LOGGING: Enabled")
 
         # ##################################################
@@ -1463,10 +1463,16 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("--verbose", "-v", dest="verbose_logging",
-                            help="Enable verbose logging",
+        parser.add_argument("--verbosity", "-v", dest="logging_verbosity",
+                            help="Set logging verbosity level value",
                             type=bool,
                             default=False,
+                            required=False
+                            )
+
+        parser.add_argument("--verbose", dest="logging_verbose",
+                            help="Enable verbose logging",
+                            action="store_true",
                             required=False
                             )
 
