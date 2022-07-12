@@ -1444,7 +1444,7 @@ class SOOSAnalysisScript:
                             )
 
         parser.add_argument("--packageManagers", "-pm", dest="package_managers",
-                            help="Comma separated list of Package Managers names to filter manifest search.",
+                            help="A list of package managers, delimited by comma, to include when searching for manifest files.",
                             type=str,
                             required=False
                             )                                  
