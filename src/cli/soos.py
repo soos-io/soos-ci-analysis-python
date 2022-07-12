@@ -740,7 +740,7 @@ class SOOS:
         )
 
     # returns count of valid manifests that were uploaded or None on error
-    def send_manifests(self, project_id, analysis_id, dirs_to_exclude, files_to_exclude) -> Optional[int]:
+    def send_manifests(self, project_id, analysis_id, dirs_to_exclude, files_to_exclude, package_managers) -> Optional[int]:
 
         has_more_than_maximum_manifests = False
 
@@ -755,8 +755,10 @@ class SOOS:
         manifestArr = []
 
         for manifest_file in MANIFEST_FILES:
-            files = []
             package_manager = manifest_file['packageManager']
+            if len(package_managers) > 0 and package_manager.lower() not in (manager.lower() for manager in package_managers):
+                continue
+            files = []
             SOOS.console_log("Looking for " + package_manager + " files...")
 
             for entries in manifest_file["manifests"]:
@@ -1255,6 +1257,7 @@ class SOOSAnalysisScript:
 
         self.directories_to_exclude = None
         self.files_to_exclude = None
+        self.package_managers = None
 
         self.working_directory = None
 
@@ -1333,6 +1336,16 @@ class SOOSAnalysisScript:
                 self.files_to_exclude.append(a_file.strip())
         else:
             SOOS.console_log("FILES_TO_EXCLUDE: <NONE>")
+
+        self.package_managers = []
+        if script_args.package_managers is not None and len(script_args.package_managers.strip()) > 0:
+            SOOS.console_log(f"PACKAGE MANAGERS: {script_args.package_managers.strip()}")
+            temp_package_managers: List[str] = script_args.package_managers.split(",")
+
+            for package_managers in temp_package_managers:
+                self.package_managers.append(package_managers.strip())
+        else:
+            SOOS.console_log("PACKAGE MANAGERS: <NONE>")    
 
         # WORKING DIRECTORY & ASYNC RESUlT FILE
         self.__set_working_dir_and_async_result_file__(script_args.working_directory)
@@ -1429,6 +1442,12 @@ class SOOSAnalysisScript:
                             default=10,
                             required=False
                             )
+
+        parser.add_argument("--packageManagers", "-pm", dest="package_managers",
+                            help="A list of package managers, delimited by comma, to include when searching for manifest files.",
+                            type=str,
+                            required=False
+                            )              
 
         # CONTEXT PARAMETERS
 
@@ -1553,7 +1572,7 @@ class SOOSAnalysisScript:
                             type=str,
                             default=False,
                             required=False
-                            )
+                            )                   
 
         return parser
 
@@ -1624,7 +1643,8 @@ def entry_point():
             project_id=create_scan_api_response.projectHash,
             analysis_id=create_scan_api_response.analysisId,
             dirs_to_exclude=soos.script.directories_to_exclude,
-            files_to_exclude=soos.script.files_to_exclude
+            files_to_exclude=soos.script.files_to_exclude,
+            package_managers=soos.script.package_managers
         )
 
         if valid_manifests_count is not None and valid_manifests_count > 0:
