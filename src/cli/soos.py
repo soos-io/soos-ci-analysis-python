@@ -1240,17 +1240,6 @@ class SOOSModeOfOperation:
     ASYNC_INIT = "async_init"
     ASYNC_RESULT = "async_result"
 
-class SOOSPackageManagers:
-    DART = "Dart"
-    ERLANG = "Erlang"
-    HOMEBREW = "Homebrew"
-    JAVA = "Java"
-    NPM = "NPM"
-    NUGET = "NuGet"
-    PHP = "PHP"
-    PYTHON = "Python"
-    RUBY = "Ruby"
-    RUST = "Rust"
 
 class SOOSAnalysisScript:
     MIN_ANALYSIS_RESULT_POLLING_INTERVAL = 10
