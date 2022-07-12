@@ -400,7 +400,7 @@ class SOOSContext:
             self.api_key = str(script_args.api_key)
             SOOS.console_log("SOOS_API_KEY Parameter Loaded: SECRET")
 
-        if script_args.logging_verbose is True or script_args.logging_verbosity == "DEBUG":
+        if script_args.logging_verbose is True or str(script_args.logging_verbosity).upper() == "DEBUG":
             self.verbose_logging = True
             SOOS.console_log("SOOS_VERBOSE_LOGGING: Enabled")
 
