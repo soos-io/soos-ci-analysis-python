@@ -1447,7 +1447,7 @@ class SOOSAnalysisScript:
                             help="A list of package managers, delimited by comma, to include when searching for manifest files.",
                             type=str,
                             required=False
-                            )                                  
+                            )              
 
         # CONTEXT PARAMETERS
 
