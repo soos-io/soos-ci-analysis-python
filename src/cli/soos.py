@@ -1443,7 +1443,7 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("--packageManagers", "-pkgmngs", dest="package_managers",
+        parser.add_argument("--packageManagers", "-pm", dest="package_managers",
                             help="Comma separated list of Package Managers names to filter manifest search.",
                             type=str,
                             required=False
