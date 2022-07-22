@@ -9,6 +9,7 @@ import platform
 import sys
 import time
 import requests
+from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
 from typing import List, AnyStr, Optional, Any, Dict, Union, Tuple
@@ -1380,9 +1381,17 @@ class SOOSAnalysisScript:
 
         parser = argparse.ArgumentParser(description="SOOS CI Integration Script")
 
+        # DOCUMENTATION
+
+        parser.add_argument('-hf', "--helpFormatted", dest="help_formatted",
+                            help="Print the --help command in markdown table format",
+                            action="store_true",
+                            default=False,
+                            required=False)
+
         # SCRIPT PARAMETERS
 
-        parser.add_argument("--mode", "-m", dest="mode",
+        parser.add_argument("-m", "--mode", dest="mode",
                             help="Mode of operation:\n"
                                  "run_and_wait: Run Analysis & Wait ** Default Value,\n"
                                  "async_init: Async Init,\n"
@@ -1392,7 +1401,7 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("--onFailure", "-of", dest="on_failure",
+        parser.add_argument("-of", "--onFailure", dest="on_failure",
                             help="On Failure:\n"
                                  "fail_the_build: Fail The Build\n"
                                  "continue_on_failure: Continue On Failure ** Default Value",
@@ -1401,7 +1410,7 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("--directoriesToExclude", "-dte", dest="directories_to_exclude",
+        parser.add_argument("-dte", "--directoriesToExclude", dest="directories_to_exclude",
                             help="Listing of directories (relative to ./) to exclude from the search for manifest files.\n"
                                  "Example - Correct: bin/start/\n"
                                  "Example - Incorrect: ./bin/start/\n"
@@ -1410,7 +1419,7 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("--filesToExclude", "-fte", dest="files_to_exclude",
+        parser.add_argument("-fte", "--filesToExclude", dest="files_to_exclude",
                             help="Listing of files (relative to ./) to exclude from the search for manifest files.\n"
                                  "Example - Correct: bin/start/requirements.txt\n"
                                  "Example - Incorrect: ./bin/start/requirements.txt\n"
@@ -1419,7 +1428,7 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("--workingDirectory", "-wd", dest="working_directory",
+        parser.add_argument("-wd", "--workingDirectory", dest="working_directory",
                             help="Absolute path where SOOS may write and read persistent files for the given build.\n"
                                  "Example - Correct: /tmp/workspace/\n"
                                  "Example - Incorrect: ./bin/start/\n"
@@ -1428,14 +1437,14 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("--resultMaxWait", "-armw", dest="analysis_result_max_wait",
+        parser.add_argument("-armw", "--resultMaxWait", dest="analysis_result_max_wait",
                             help="Maximum seconds to wait for Analysis Result. Default 300.",
                             type=int,
                             default=300,
                             required=False
                             )
 
-        parser.add_argument("--resultPollingInterval", "-arpi", dest="analysis_result_polling_interval",
+        parser.add_argument("-arpi", "--resultPollingInterval", dest="analysis_result_polling_interval",
                             help="Polling interval (in seconds) for analysis result completion (success/failure).\n"
                                  "Min value: 10",
                             type=int,
@@ -1443,7 +1452,7 @@ class SOOSAnalysisScript:
                             required=False
                             )
 
-        parser.add_argument("--packageManagers", "-pm", dest="package_managers",
+        parser.add_argument("-pm", "--packageManagers", dest="package_managers",
                             help="A list of package managers, delimited by comma, to include when searching for manifest files.",
                             type=str,
                             required=False
@@ -1451,38 +1460,38 @@ class SOOSAnalysisScript:
 
         # CONTEXT PARAMETERS
 
-        parser.add_argument("--baseUri", "-buri", dest="base_uri",
+        parser.add_argument("-buri", "--baseUri", dest="base_uri",
                             help="API URI Path. Default Value: https://api.soos.io/api/",
                             type=str,
                             default="https://api.soos.io/api/",
                             required=False
                             )
 
-        parser.add_argument("--sourceCodePath", "-scp", dest="source_code_path",
+        parser.add_argument("-scp", "--sourceCodePath", dest="source_code_path",
                             help="Root path to begin recursive search for manifests. Default Value: ./",
                             type=str,
                             required=False
                             )
 
-        parser.add_argument("--projectName", "-pn", dest="project_name",
+        parser.add_argument("-pn", "--projectName", dest="project_name",
                             help="Project name for tracking results",
                             type=str,
                             required=False
                             )
 
-        parser.add_argument("--clientId", "-cid", dest="client_id",
+        parser.add_argument("-cid", "--clientId", dest="client_id",
                             help="API Client ID",
                             type=str,
                             required=False
                             )
 
-        parser.add_argument("--apiKey", "-akey", dest="api_key",
+        parser.add_argument("-akey", "--apiKey", dest="api_key",
                             help="API Key",
                             type=str,
                             required=False
                             )
 
-        parser.add_argument("--verbosity", "-v", dest="logging_verbosity",
+        parser.add_argument("-v", "--verbosity", dest="logging_verbosity",
                             help="Set logging verbosity level value (INFO/DEBUG)",
                             type=str,
                             default="INFO",
@@ -1497,63 +1506,63 @@ class SOOSAnalysisScript:
 
         # CI SPECIAL CONTEXT
 
-        parser.add_argument("--commitHash", "-ch", dest="commit_hash",
+        parser.add_argument("-ch", "--commitHash", dest="commit_hash",
                             help="Commit Hash Value",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("--branchName", "-bn", dest="branch_name",
+        parser.add_argument("-bn", "--branchName", dest="branch_name",
                             help="Branch Name",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("--branchUri", "-bruri", dest="branch_uri",
+        parser.add_argument("-bruri", "--branchUri", dest="branch_uri",
                             help="Branch URI",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("--buildVersion", "-bldver", dest="build_version",
+        parser.add_argument("-bldver", "--buildVersion", dest="build_version",
                             help="Build Version",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("--buildUri", "-blduri", dest="build_uri",
+        parser.add_argument("-blduri", "--buildUri", dest="build_uri",
                             help="Build URI",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("--operatingEnvironment", "-oe", dest="operating_environment",
+        parser.add_argument("-oe", "--operatingEnvironment", dest="operating_environment",
                             help="Operating Environment",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("--appVersion", "-appver", dest="app_version",
+        parser.add_argument("-appver", "--appVersion", dest="app_version",
                             help="App Version. Intended for internal use only.",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("--integrationName", "-intn", dest="integration_name",
+        parser.add_argument("-intn", "--integrationName", dest="integration_name",
                             help="Integration Name (e.g. Provider)",
                             type=str,
                             default=None,
                             required=False
                             )
 
-        parser.add_argument("--integrationType", "-intt", dest="integration_type",
+        parser.add_argument("-intt", "--integrationType", dest="integration_type",
                             help="Integration Type. Intended for internal use only.",
                             type=str,
                             default=None,
@@ -1573,14 +1582,6 @@ class SOOSAnalysisScript:
                             default=False,
                             required=False
                             )
-
-        # DOCUMENTATION
-
-        parser.add_argument("--helpFormatted", dest="help_formatted",
-                            help="Print the --help command in markdown table format",
-                            action="store_true",
-                            default=False,
-                            required=False)
 
         return parser
 
@@ -1775,16 +1776,14 @@ def print_help_formatted(parser):
     print("| Argument | Description |")
     print("| --- | --- |")
 
-    argsPerHelpText = []
-    lastHelpText = list(parser._option_string_actions.values())[0]
+    allRows = []
     for arg, helpText in parser._option_string_actions.items():
-        if(lastHelpText != helpText):
-            descriptionText = lastHelpText.help.replace('\n', '<br>')
-            print(f"| {', '.join(argsPerHelpText)} | {descriptionText} |")
-            argsPerHelpText.clear()
+        descriptionText = helpText.help.replace('\n', '<br>')
+        allRows.append(f"| {', '.join(helpText.option_strings)} | {descriptionText} |")
 
-        argsPerHelpText.append(arg)
-        lastHelpText = helpText
+    # remove duplicates
+    for row in list(OrderedDict.fromkeys(allRows)):
+        print(row)
 
 if __name__ == "__main__":
     PyPI_URL = "https://pypi.org/project/soos-sca"
