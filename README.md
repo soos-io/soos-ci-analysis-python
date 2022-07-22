@@ -33,8 +33,7 @@ See [Windows Batch File Gist](https://gist.githubusercontent.com/soostech/37134f
 | --mode, -m | Mode of operation:<br>run_and_wait: Run Analysis & Wait ** Default Value,<br>async_init: Async Init,<br>async_result: Async Result |
 | --onFailure, -of | On Failure:<br>fail_the_build: Fail The Build<br>continue_on_failure: Continue On Failure ** Default Value |
 | --directoriesToExclude, -dte | Listing of directories (relative to ./) to exclude from the search for manifest files.<br>Example - Correct: bin/start/<br>Example - Incorrect: ./bin/start/<br>Example - Incorrect: /bin/start |
-| --filesToExclude, -fte | Listing of files (relative to ./) to exclude from the search for manifest files.<br>Example - Correct: bin/start/requirements.txt<br>Example - Incorrect: ./bin/start/requirements.txt<br>Example - Incorrect: /
-bin/start/requirements.txt |
+| --filesToExclude, -fte | Listing of files (relative to ./) to exclude from the search for manifest files.<br>Example - Correct: bin/start/requirements.txt<br>Example - Incorrect: ./bin/start/requirements.txt<br>Example - Incorrect: /bin/start/requirements.txt |
 | --workingDirectory, -wd | Absolute path where SOOS may write and read persistent files for the given build.<br>Example - Correct: /tmp/workspace/<br>Example - Incorrect: ./bin/start/<br>Example - Incorrect: tmp/workspace |
 | --resultMaxWait, -armw | Maximum seconds to wait for Analysis Result. Default 300. |
 | --resultPollingInterval, -arpi | Polling interval (in seconds) for analysis result completion (success/failure).<br>Min value: 10 |
