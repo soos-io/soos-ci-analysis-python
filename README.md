@@ -30,7 +30,8 @@ See [Windows Batch File Gist](https://gist.githubusercontent.com/soostech/37134f
 | --- | --- |
 | -h, --help | show this help message and exit |
 | -hf, --helpFormatted | Print the --help command in markdown table format |
-| -m, --mode | Mode of operation:<br>run_and_wait: Run Analysis & Wait ** Default Value,<br>async_init: Async Init,<br>async_result: Async Result |
+| -m, --mode | Mode of operation:<br>run_and_wait: Run Analysis & Wait ** Default Value,<br>async_init: Async Init,<br>async_result: Async Result<br>For more information about scan modes, visit https://github.com/soos-io/kb-docs/blob/m
+ain/SCA/Script.md |
 | -of, --onFailure | On Failure:<br>fail_the_build: Fail The Build<br>continue_on_failure: Continue On Failure ** Default Value |
 | -dte, --directoriesToExclude | Listing of directories (relative to ./) to exclude from the search for manifest files.<br>Example - Correct: bin/start/<br>Example - Incorrect: ./bin/start/<br>Example - Incorrect: /bin/start |
 | -fte, --filesToExclude | Listing of files (relative to ./) to exclude from the search for manifest files.<br>Example - Correct: bin/start/requirements.txt<br>Example - Incorrect: ./bin/start/requirements.txt<br>Example - Incorrect: /bin/start/requirements.txt |
@@ -38,11 +39,11 @@ See [Windows Batch File Gist](https://gist.githubusercontent.com/soostech/37134f
 | -armw, --resultMaxWait | Maximum seconds to wait for Analysis Result. Default 300. |
 | -arpi, --resultPollingInterval | Polling interval (in seconds) for analysis result completion (success/failure).<br>Min value: 10 |
 | -pm, --packageManagers | A list of package managers, delimited by comma, to include when searching for manifest files. |
-| -buri, --baseUri | API URI Path. Default Value: https://api.soos.io/api/ |
+| -buri, --baseUri | SOOS API URI Path. Default Value: https://api.soos.io/api/<br>Intended for internal use only. |
 | -scp, --sourceCodePath | Root path to begin recursive search for manifests. Default Value: ./ |
-| -pn, --projectName | Project name for tracking results |
-| -cid, --clientId | API Client ID |
-| -akey, --apiKey | API Key |
+| -pn, --projectName | Project name for tracking results, (this will be the one used inside of the SOOS App) |
+| -cid, --clientId | Client ID, get yours from https://app.soos.io/integrate/sca |
+| -akey, --apiKey | API Key, get yours from https://app.soos.io/integrate/sca |
 | -v, --verbosity | Set logging verbosity level value (INFO/DEBUG) |
 | --verbose | Enable verbose logging |
 | -ch, --commitHash | Commit Hash Value |
