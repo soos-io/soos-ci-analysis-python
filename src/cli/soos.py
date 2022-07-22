@@ -1395,7 +1395,8 @@ class SOOSAnalysisScript:
                             help="Mode of operation:\n"
                                  "run_and_wait: Run Analysis & Wait ** Default Value,\n"
                                  "async_init: Async Init,\n"
-                                 "async_result: Async Result",
+                                 "async_result: Async Result\n"
+                                 "For more information about scan modes, visit https://github.com/soos-io/kb-docs/blob/main/SCA/Script.md",
                             type=str,
                             default="run_and_wait",
                             required=False
@@ -1461,7 +1462,8 @@ class SOOSAnalysisScript:
         # CONTEXT PARAMETERS
 
         parser.add_argument("-buri", "--baseUri", dest="base_uri",
-                            help="API URI Path. Default Value: https://api.soos.io/api/",
+                            help="SOOS API URI Path. Default Value: https://api.soos.io/api/\n"
+                                 "Intended for internal use only.",
                             type=str,
                             default="https://api.soos.io/api/",
                             required=False
@@ -1474,19 +1476,19 @@ class SOOSAnalysisScript:
                             )
 
         parser.add_argument("-pn", "--projectName", dest="project_name",
-                            help="Project name for tracking results",
+                            help="Project name for tracking results, (this will be the one used inside of the SOOS App)",
                             type=str,
                             required=False
                             )
 
         parser.add_argument("-cid", "--clientId", dest="client_id",
-                            help="API Client ID",
+                            help="Client ID, get yours from https://app.soos.io/integrate/sca",
                             type=str,
                             required=False
                             )
 
         parser.add_argument("-akey", "--apiKey", dest="api_key",
-                            help="API Key",
+                            help="API Key, get yours from https://app.soos.io/integrate/sca",
                             type=str,
                             required=False
                             )
