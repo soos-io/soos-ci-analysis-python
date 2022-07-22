@@ -1383,9 +1383,9 @@ class SOOSAnalysisScript:
         # SCRIPT PARAMETERS
 
         parser.add_argument("--mode", "-m", dest="mode",
-                            help="Mode of operation: "
-                                 "run_and_wait: Run Analysis & Wait ** Default Value, "
-                                 "async_init: Async Init, "
+                            help="Mode of operation:\n"
+                                 "run_and_wait: Run Analysis & Wait ** Default Value,\n"
+                                 "async_init: Async Init,\n"
                                  "async_result: Async Result",
                             type=str,
                             default="run_and_wait",
@@ -1393,8 +1393,8 @@ class SOOSAnalysisScript:
                             )
 
         parser.add_argument("--onFailure", "-of", dest="on_failure",
-                            help="On Failure: "
-                                 "fail_the_build: Fail The Build "
+                            help="On Failure:\n"
+                                 "fail_the_build: Fail The Build\n"
                                  "continue_on_failure: Continue On Failure ** Default Value",
                             type=str,
                             default="continue_on_failure",
@@ -1436,7 +1436,7 @@ class SOOSAnalysisScript:
                             )
 
         parser.add_argument("--resultPollingInterval", "-arpi", dest="analysis_result_polling_interval",
-                            help="Polling interval (in seconds) for analysis result completion (success/failure). "
+                            help="Polling interval (in seconds) for analysis result completion (success/failure).\n"
                                  "Min value: 10",
                             type=int,
                             default=10,
@@ -1572,7 +1572,15 @@ class SOOSAnalysisScript:
                             type=str,
                             default=False,
                             required=False
-                            )                   
+                            )
+
+        # DOCUMENTATION
+
+        parser.add_argument("--helpFormatted", dest="help_formatted",
+                            help="Print the --help command in markdown table format",
+                            action="store_true",
+                            default=False,
+                            required=False)
 
         return parser
 
@@ -1585,6 +1593,10 @@ def entry_point():
     # Register and load script arguments
     parser = soos.script.register_arguments()
     args = parser.parse_args()
+
+    if (args.help_formatted):
+        print_help_formatted(parser)
+        sys.exit(1)
 
     soos.script.load_script_arguments(script_args=args)
     load_context_result = soos.context.load(script_args=args)
@@ -1758,6 +1770,21 @@ def entry_point():
             sys.exit(1)
         else:
             sys.exit(0)
+
+def print_help_formatted(parser):
+    print("| Argument | Description |")
+    print("| --- | --- |")
+
+    argsPerHelpText = []
+    lastHelpText = list(parser._option_string_actions.values())[0]
+    for arg, helpText in parser._option_string_actions.items():
+        if(lastHelpText != helpText):
+            descriptionText = lastHelpText.help.replace('\n', '<br>')
+            print(f"| {', '.join(argsPerHelpText)} | {descriptionText} |")
+            argsPerHelpText.clear()
+
+        argsPerHelpText.append(arg)
+        lastHelpText = helpText
 
 if __name__ == "__main__":
     PyPI_URL = "https://pypi.org/project/soos-sca"
