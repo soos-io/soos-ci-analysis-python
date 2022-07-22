@@ -30,8 +30,7 @@ See [Windows Batch File Gist](https://gist.githubusercontent.com/soostech/37134f
 | --- | --- |
 | -h, --help | show this help message and exit |
 | -hf, --helpFormatted | Print the --help command in markdown table format |
-| -m, --mode | Mode of operation:<br>run_and_wait: Run Analysis & Wait ** Default Value,<br>async_init: Async Init,<br>async_result: Async Result<br>For more information about scan modes, visit https://github.com/soos-io/kb-docs/blob/m
-ain/SCA/Script.md |
+| -m, --mode | Mode of operation:<br>run_and_wait: Run Analysis & Wait ** Default Value,<br>async_init: Async Init,<br>async_result: Async Result<br>For more information about scan modes, visit https://github.com/soos-io/kb-docs/blob/main/SCA/Script.md |
 | -of, --onFailure | On Failure:<br>fail_the_build: Fail The Build<br>continue_on_failure: Continue On Failure ** Default Value |
 | -dte, --directoriesToExclude | Listing of directories (relative to ./) to exclude from the search for manifest files.<br>Example - Correct: bin/start/<br>Example - Incorrect: ./bin/start/<br>Example - Incorrect: /bin/start |
 | -fte, --filesToExclude | Listing of files (relative to ./) to exclude from the search for manifest files.<br>Example - Correct: bin/start/requirements.txt<br>Example - Incorrect: ./bin/start/requirements.txt<br>Example - Incorrect: /bin/start/requirements.txt |
