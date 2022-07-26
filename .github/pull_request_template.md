@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!---
 ### Changes:
   - Description of the change
