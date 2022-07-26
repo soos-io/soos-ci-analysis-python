@@ -1599,7 +1599,7 @@ def entry_point():
 
     if (args.help_formatted):
         print_help_formatted(parser)
-        sys.exit(1)
+        sys.exit(0)
 
     soos.script.load_script_arguments(script_args=args)
     load_context_result = soos.context.load(script_args=args)
