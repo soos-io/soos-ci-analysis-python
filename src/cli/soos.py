@@ -1774,14 +1774,16 @@ def entry_point():
         else:
             sys.exit(0)
 
+
 def print_help_formatted(parser):
-    print("| Argument | Description |")
-    print("| --- | --- |")
+    print("| Argument | Default | Description |")
+    print("| --- | --- | --- |")
 
     allRows = []
-    for arg, helpText in parser._option_string_actions.items():
-        descriptionText = helpText.help.replace('\n', '<br>')
-        allRows.append(f"| {', '.join(helpText.option_strings)} | {descriptionText} |")
+    for arg, options in parser._option_string_actions.items():
+        defaultValue = options.default
+        descriptionText = options.help.replace('\n', '<br>')
+        allRows.append(f"| {', '.join(options.option_strings)} | {defaultValue} | {descriptionText} |")
 
     # remove duplicates
     for row in list(OrderedDict.fromkeys(allRows)):

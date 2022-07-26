@@ -26,36 +26,36 @@ See [Linux GitHub Gist](https://gist.githubusercontent.com/soostech/bf4fe3c320f7
 See [Windows Batch File Gist](https://gist.githubusercontent.com/soostech/37134fb636da3246d275b2ee220669c1/raw/0ab31b1c50869d8e8061deee4fa04e8ff7169f77/soos_sca.bat)
 
 ### Script Arguments
-| Argument | Description |
-| --- | --- |
-| -h, --help | show this help message and exit |
-| -hf, --helpFormatted | Print the --help command in markdown table format |
-| -m, --mode | Mode of operation:<br>run_and_wait: Run Analysis & Wait ** Default Value,<br>async_init: Async Init,<br>async_result: Async Result<br>For more information about scan modes, visit https://github.com/soos-io/kb-docs/blob/main/SCA/Script.md |
-| -of, --onFailure | On Failure:<br>fail_the_build: Fail The Build<br>continue_on_failure: Continue On Failure ** Default Value |
-| -dte, --directoriesToExclude | Listing of directories (relative to ./) to exclude from the search for manifest files.<br>Example - Correct: bin/start/<br>Example - Incorrect: ./bin/start/<br>Example - Incorrect: /bin/start |
-| -fte, --filesToExclude | Listing of files (relative to ./) to exclude from the search for manifest files.<br>Example - Correct: bin/start/requirements.txt<br>Example - Incorrect: ./bin/start/requirements.txt<br>Example - Incorrect: /bin/start/requirements.txt |
-| -wd, --workingDirectory | Absolute path where SOOS may write and read persistent files for the given build.<br>Example - Correct: /tmp/workspace/<br>Example - Incorrect: ./bin/start/<br>Example - Incorrect: tmp/workspace |
-| -armw, --resultMaxWait | Maximum seconds to wait for Analysis Result. Default 300. |
-| -arpi, --resultPollingInterval | Polling interval (in seconds) for analysis result completion (success/failure).<br>Min value: 10 |
-| -pm, --packageManagers | A list of package managers, delimited by comma, to include when searching for manifest files. |
-| -buri, --baseUri | SOOS API URI Path. Default Value: https://api.soos.io/api/<br>Intended for internal use only. |
-| -scp, --sourceCodePath | Root path to begin recursive search for manifests. Default Value: ./ |
-| -pn, --projectName | Project name for tracking results, (this will be the one used inside of the SOOS App) |
-| -cid, --clientId | Client ID, get yours from https://app.soos.io/integrate/sca |
-| -akey, --apiKey | API Key, get yours from https://app.soos.io/integrate/sca |
-| -v, --verbosity | Set logging verbosity level value (INFO/DEBUG) |
-| --verbose | Enable verbose logging |
-| -ch, --commitHash | Commit Hash Value |
-| -bn, --branchName | Branch Name |
-| -bruri, --branchUri | Branch URI |
-| -bldver, --buildVersion | Build Version |
-| -blduri, --buildUri | Build URI |
-| -oe, --operatingEnvironment | Operating Environment |
-| -appver, --appVersion | App Version. Intended for internal use only. |
-| -intn, --integrationName | Integration Name (e.g. Provider) |
-| -intt, --integrationType | Integration Type. Intended for internal use only. |
-| -sarif | Upload SARIF Report to GitHub |
-| -gpat | GitHub Personal Authorization Token |
+| Argument | Default | Description |
+| --- | --- | --- |
+| -h, --help | ==SUPPRESS== | show this help message and exit |
+| -hf, --helpFormatted | False | Print the --help command in markdown table format |
+| -m, --mode | run_and_wait | Mode of operation:<br>run_and_wait: Run Analysis & Wait ** Default Value,<br>async_init: Async Init,<br>async_result: Async Result<br>For more information about scan modes, visit https://github.com/soos-io/kb-docs/blob/main/SCA/Script.md |
+| -of, --onFailure | continue_on_failure | On Failure:<br>fail_the_build: Fail The Build<br>continue_on_failure: Continue On Failure ** Default Value |
+| -dte, --directoriesToExclude | None | Listing of directories (relative to ./) to exclude from the search for manifest files.<br>Example - Correct: bin/start/<br>Example - Incorrect: ./bin/start/<br>Example - Incorrect: /bin/start |
+| -fte, --filesToExclude | None | Listing of files (relative to ./) to exclude from the search for manifest files.<br>Example - Correct: bin/start/requirements.txt<br>Example - Incorrect: ./bin/start/requirements.txt<br>Example - Incorrect: /bin/start/requirements.txt |
+| -wd, --workingDirectory | None | Absolute path where SOOS may write and read persistent files for the given build.<br>Example - Correct: /tmp/workspace/<br>Example - Incorrect: ./bin/start/<br>Example - Incorrect: tmp/workspace |
+| -armw, --resultMaxWait | 300 | Maximum seconds to wait for Analysis Result. Default 300. |
+| -arpi, --resultPollingInterval | 10 | Polling interval (in seconds) for analysis result completion (success/failure).<br>Min value: 10 |
+| -pm, --packageManagers | None | A list of package managers, delimited by comma, to include when searching for manifest files. |
+| -buri, --baseUri | https://api.soos.io/api/ | SOOS API URI Path. Default Value: https://api.soos.io/api/<br>Intended for internal use only. |
+| -scp, --sourceCodePath | None | Root path to begin recursive search for manifests. Default Value: ./ |
+| -pn, --projectName | None | Project name for tracking results, (this will be the one used inside of the SOOS App) |
+| -cid, --clientId | None | Client ID, get yours from https://app.soos.io/integrate/sca |
+| -akey, --apiKey | None | API Key, get yours from https://app.soos.io/integrate/sca |
+| -v, --verbosity | INFO | Set logging verbosity level value (INFO/DEBUG) |
+| --verbose | False | Enable verbose logging |
+| -ch, --commitHash | None | Commit Hash Value |
+| -bn, --branchName | None | Branch Name |
+| -bruri, --branchUri | None | Branch URI |
+| -bldver, --buildVersion | None | Build Version |
+| -blduri, --buildUri | None | Build URI |
+| -oe, --operatingEnvironment | None | Operating Environment |
+| -appver, --appVersion | None | App Version. Intended for internal use only. |
+| -intn, --integrationName | None | Integration Name (e.g. Provider) |
+| -intt, --integrationType | None | Integration Type. Intended for internal use only. |
+| -sarif | False | Upload SARIF Report to GitHub |
+| -gpat | False | GitHub Personal Authorization Token |
 
 
 ## Feedback and Support
