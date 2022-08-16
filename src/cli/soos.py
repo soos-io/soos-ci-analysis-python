@@ -821,9 +821,11 @@ class SOOS:
                             # attempt to get immediate parent folder
                             if full_file_path.find("/") >= 0:
                                 # get furthest-right folder (immediate parent)
-                                immediate_parent_folder = pure_directory.split("/")[-1]
+                                foldersSplitted = pure_directory.replace(soos.context.source_code_path, "").split("/")
+                                parent_folder = "/".join(foldersSplitted)
                             else:
-                                immediate_parent_folder = pure_directory.split("\\")[-1]
+                                foldersSplitted = pure_directory.replace(soos.context.source_code_path, "").split("\\")
+                                parent_folder = "/".join(foldersSplitted)
 
                         except Exception as e:
 
@@ -832,7 +834,7 @@ class SOOS:
                                              )
                             pass
 
-                        manifest_label = immediate_parent_folder
+                        manifest_label = parent_folder
 
                         with open(file_name, mode='r', encoding="utf-8") as the_file:
                             content = the_file.read()
