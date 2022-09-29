@@ -973,7 +973,7 @@ class SOOS:
                         soos.console_log_verbose("Failures reported, failing build.")
                         sys.exit(1)
                 elif analysis_status.lower() == "incomplete":
-                    SOOS.console_log(f"Analysis Incomplete. It may have been cancelled or superseded by another scan.")
+                    SOOS.console_log("Analysis Incomplete. It may have been cancelled or superseded by another scan.")
 
                     if self.script.on_failure == SOOSOnFailure.CONTINUE_ON_FAILURE:
                         return
@@ -981,7 +981,7 @@ class SOOS:
                         soos.console_log_verbose("Analysis Incomplete, failing build.")
                         sys.exit(1)
                 elif analysis_status.lower() == "error":
-                    SOOS.console_log(f"Analysis Error.")
+                    SOOS.console_log("Analysis Error.")
 
                     if self.script.on_failure == SOOSOnFailure.CONTINUE_ON_FAILURE:
                         return
