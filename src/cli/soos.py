@@ -981,7 +981,7 @@ class SOOS:
                         soos.console_log_verbose("Analysis Incomplete, failing build.")
                         sys.exit(1)
                 elif analysis_status.lower() == "error":
-                    SOOS.console_log(f"Analysis Error. Will retry in {str(analysis_result_polling_interval)} seconds.")
+                    SOOS.console_log(f"Analysis Error.")
 
                     if self.script.on_failure == SOOSOnFailure.CONTINUE_ON_FAILURE:
                         return
