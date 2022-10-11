@@ -157,23 +157,10 @@ def handle_response(api_response: requests.Response):
         else:
             return api_response.json()
 
-
-def handle_error(error: ErrorAPIResponse, api: str, attempt: int, max_retry: int):
-    error_message = f"{api} has an error. Attempt {str(attempt)} of {str(max_retry)}"
-    raise Exception(f"{error_message}\n{error.code}-{error.message}")
-
-
 def generate_header(api_key: str, content_type: str):
     return {'x-soos-apikey': api_key, 'Content-Type': content_type}
 
-
-def raise_max_retry_exception(attempt: int, retry_count: int):
-    if attempt >= retry_count:
-        raise Exception("The maximum retries allowed were reached")
-
-
 class SOOSStructureAPI:
-    API_RETRY_COUNT = 3
 
     URI_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/analysis/structure"
 
@@ -229,28 +216,25 @@ class SOOSStructureAPI:
         if soos_context.app_version is not None:
             structure_api_data["appVersion"] = soos_context.app_version
 
-        for i in range(0, SOOSStructureAPI.API_RETRY_COUNT):
-            try:
-                kernel = requests.post(
-                    url=api_url,
-                    data=json.dumps(structure_api_data),
-                    # files=structure_api_data,
-                    headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'})
+        try:
+            kernel = requests.post(
+                url=api_url,
+                data=json.dumps(structure_api_data),
+                # files=structure_api_data,
+                headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'})
 
-                json_response = handle_response(api_response=kernel)
+            json_response = handle_response(api_response=kernel)
 
-                if type(json_response) is ErrorAPIResponse:
-                    api_response = json_response
-                    raise Exception(f"{json_response.code}-{json_response.message}")
-                else:
-                    api_response = SOOSStructureAPIResponse(json_response)
-                break
+            if type(json_response) is ErrorAPIResponse:
+                api_response = json_response
+                raise Exception(f"{json_response.code}-{json_response.message}")
+            else:
+                api_response = SOOSStructureAPIResponse(json_response)
 
-            except Exception as e:
-                SOOS.console_log("A Structure API Exception Occurred. "
-                                 "Attempt " + str(i + 1) + " of " + str(SOOSStructureAPI.API_RETRY_COUNT) + "::" +
-                                 "Data: " + str(structure_api_data) + "::" +
-                                 "Exception: " + str(e)
+        except Exception as e:
+            SOOS.console_log("A Structure API Exception Occurred. "
+                                "Data: " + str(structure_api_data) + "::" +
+                                "Exception: " + str(e)
                                  )
 
         return api_response
@@ -508,7 +492,6 @@ class SOOSScanAPI:
         "create": "{baseUri}clients/{clientHash}/scan-types/{scanType}/scans",
         "status": "{baseUri}clients/{clientHash}/projects/{projectHash}/branches/{branchHash}/scan-types/{scanType}/scans/{scanId}"
     }
-    API_RETRY_COUNT = 3
 
     def __init__(self):
         pass
@@ -560,20 +543,15 @@ class SOOSScanAPI:
 
             headers = generate_header(api_key=context.api_key, content_type="application/json")
             data = json.dumps(start_scan_data)
-            attempt = 0
 
-            for attempt in range(0, SOOSScanAPI.API_RETRY_COUNT):
-                api_response: requests.Response = requests.post(url=url, data=data, headers=headers)
-                json_response = handle_response(api_response)
-                if type(json_response) is ErrorAPIResponse:
-                    create_scan_response = json_response
-                    error_message = f"A Create Scan MetaData API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}"
-                    SOOS.console_log(f"{error_message}\n{json_response.code}-{json_response.message}")
-                else:
-                    create_scan_response = CreateScanAPIResponse(create_scan_json_response=json_response)
-                    break
-
-            raise_max_retry_exception(attempt=attempt, retry_count=SOOSScanAPI.API_RETRY_COUNT)
+            api_response: requests.Response = requests.post(url=url, data=data, headers=headers)
+            json_response = handle_response(api_response)
+            if type(json_response) is ErrorAPIResponse:
+                create_scan_response = json_response
+                error_message = "A Create Scan MetaData API Exception Occurred"
+                SOOS.console_log(f"{error_message}\n{json_response.code}-{json_response.message}")
+            else:
+                create_scan_response = CreateScanAPIResponse(create_scan_json_response=json_response)
 
         except Exception as e:
             SOOS.console_log(f"ERROR: {str(e)}")
@@ -593,24 +571,19 @@ class SOOSScanAPI:
         url = SOOSScanAPI.generate_scan_api_url(context=context, url_type="status", **kwargs)
 
         headers = generate_header(api_key=context.api_key, content_type="application/json")
-        attempt = 0
 
-        for attempt in range(0, SOOSScanAPI.API_RETRY_COUNT):
-            try:
-                api_response: requests.Response = requests.get(url=url, headers=headers)
-                json_response = handle_response(api_response)
-                if type(json_response) is ErrorAPIResponse:
-                    scan_status_response = json_response
-                    error_message = f"A Scan Status API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}"
-                    SOOS.console_log(f"{error_message}\n{json_response.code}-{json_response.message}")
-                else:
-                    scan_status_response = ScanStatusAPIResponse(scan_status_json_response=json_response)
-                    break
-            except Exception as e:
-                SOOS.console_log(
-                    f"A Scan Status API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSScanAPI.API_RETRY_COUNT)}")
-
-        raise_max_retry_exception(attempt=attempt, retry_count=SOOSScanAPI.API_RETRY_COUNT)
+        try:
+            api_response: requests.Response = requests.get(url=url, headers=headers)
+            json_response = handle_response(api_response)
+            if type(json_response) is ErrorAPIResponse:
+                scan_status_response = json_response
+                error_message = "A Scan Status API Exception Occurred."
+                SOOS.console_log(f"{error_message}\n{json_response.code}-{json_response.message}")
+            else:
+                scan_status_response = ScanStatusAPIResponse(scan_status_json_response=json_response)
+        except Exception as e:
+            SOOS.console_log(
+                "A Scan Status API Exception Occurred.")
 
         return scan_status_response
 
@@ -627,7 +600,6 @@ class SOOSManifestModel:
 
 
 class SOOSManifestAPI:
-    API_RETRY_COUNT = 3
 
     URI_TEMPLATE = "{soos_base_uri}" \
                    "clients/{soos_client_id}" \
@@ -668,25 +640,22 @@ class SOOSManifestAPI:
             suffix = i if i > 0 else ""
             files.append(("file" + str(suffix), (value.filename, value.content)))
             body.append(("parentFolder" + str(suffix), value.label))
-        for i in range(0, SOOSManifestAPI.API_RETRY_COUNT):
-            try:
-                SOOS.console_log("*** Posting manifests to: " + api_url)
-                # manifest_content is class str, convert to dict
-                response = requests.post(
-                    url=api_url,
-                    files=dict(files),
-                    data=body,
-                    headers={'x-soos-apikey': soos.context.api_key,
-                             },
+        
+        try:
+            SOOS.console_log("*** Posting manifests to: " + api_url)
+            # manifest_content is class str, convert to dict
+            response = requests.post(
+                url=api_url,
+                files=dict(files),
+                data=body,
+                headers={'x-soos-apikey': soos.context.api_key,
+                            },
+            )
 
-                )
+            SOOS.console_log("Manifests post Executed")
 
-                SOOS.console_log("Manifests post Executed")
-                break
-
-            except Exception as e:
-                SOOS.console_log("Manifest API Exception Occurred. "
-                                 "Attempt " + str(i + 1) + " of " + str(SOOSManifestAPI.API_RETRY_COUNT))
+        except Exception as e:
+            SOOS.console_log("Manifest API Exception Occurred.")
 
         if response is None:
             return None
@@ -1015,7 +984,6 @@ class SOOS:
 
 
 class SOOSAnalysisStartAPI:
-    API_RETRY_COUNT = 3
 
     URI_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/projects/{soos_project_id}/analysis/{soos_analysis_id}"
 
@@ -1036,27 +1004,22 @@ class SOOSAnalysisStartAPI:
 
         analysis_start_response = None
 
-        for i in range(0, SOOSAnalysisStartAPI.API_RETRY_COUNT):
-            try:
-                analysis_start_response = requests.put(
-                    url=url,
-                    data="{}",
-                    headers={'x-soos-apikey': soos_context.api_key,
-                             'content-length': str(0),
-                             'Content-Type': 'multipart/form-data'}
-                )
+        try:
+            analysis_start_response = requests.put(
+                url=url,
+                data="{}",
+                headers={'x-soos-apikey': soos_context.api_key,
+                            'content-length': str(0),
+                            'Content-Type': 'multipart/form-data'}
+            )
 
-                break
-
-            except Exception as e:
-                SOOS.console_log("Analysis Start API Exception Occurred. "
-                                 "Attempt " + str(i + 1) + " of " + str(SOOSAnalysisStartAPI.API_RETRY_COUNT))
+        except Exception as e:
+            SOOS.console_log("Analysis Start API Exception Occurred. ")
 
         return analysis_start_response
 
 
 class SOOSAnalysisResultAPI:
-    API_RETRY_COUNT = 3
 
     def __init__(self):
 
@@ -1067,25 +1030,20 @@ class SOOSAnalysisResultAPI:
 
         analysis_result_response = None
 
-        for i in range(0, SOOSAnalysisResultAPI.API_RETRY_COUNT):
-            try:
-                analysis_result_response = requests.get(
-                    url=result_uri,
-                    headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'}
-                )
+        try:
+            analysis_result_response = requests.get(
+                url=result_uri,
+                headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'}
+            )
 
-                break
-
-            except Exception as e:
-                SOOS.console_log(
-                    "Analysis Result API Exception Occurred. "
-                    "Attempt " + str(i + 1) + " of " + str(SOOSAnalysisResultAPI.API_RETRY_COUNT)
-                )
+        except Exception as e:
+            SOOS.console_log(
+                "Analysis Result API Exception Occurred. "
+            )
 
         return analysis_result_response
 
 class SOOSPatchStatusAPI:
-    API_RETRY_COUNT = 3
 
     URI_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/projects/{project_hash}/branches/{branch_hash}/scan-types/{scan_type}/scans/{scan_id}"
 
@@ -1113,28 +1071,23 @@ class SOOSPatchStatusAPI:
             "Message": message
         }
 
-        for i in range(0, SOOSPatchStatusAPI.API_RETRY_COUNT):
-            try:
-                response = requests.patch(
-                    url=api_url,
-                    data=json.dumps(patch_status_data),
-                    headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'})
+        try:
+            response = requests.patch(
+                url=api_url,
+                data=json.dumps(patch_status_data),
+                headers={'x-soos-apikey': soos_context.api_key, 'Content-Type': 'application/json'})
 
-                json_response = handle_response(api_response=response)
+            json_response = handle_response(api_response=response)
 
-                if type(json_response) is ErrorAPIResponse:
-                    raise Exception(f"{json_response.code}-{json_response.message}")
+            if type(json_response) is ErrorAPIResponse:
+                raise Exception(f"{json_response.code}-{json_response.message}")
 
-                break
-
-            except Exception as e:
-                SOOS.console_log("Error updating scan status. "
-                                 "Attempt " + str(i + 1) + " of " + str(SOOSPatchStatusAPI.API_RETRY_COUNT) + "::" +
-                                 "Exception: " + str(e)
-                                 )
+        except Exception as e:
+            SOOS.console_log("Error updating scan status. "
+                                "Exception: " + str(e)
+                                )
 
 class SOOSSARIFReport:
-    API_RETRY_COUNT = 3
 
     URL_TEMPLATE = '{soos_base_uri}clients/{clientHash}/projects/{projectHash}/branches/{branchHash}/scan-types/sca/scans/{scanId}/formats/sarif'
     GITHUB_URL_TEMPLATE = 'https://api.github.com/repos/{project_name}/code-scanning/sarifs'
@@ -1174,21 +1127,16 @@ class SOOSSARIFReport:
                                                           scan_id=scan_id)
 
             headers = generate_header(api_key=context.api_key, content_type="application/json")
-            attempt = 0
             sarif_json_response = None
-
-            for attempt in range(0, SOOSSARIFReport.API_RETRY_COUNT):
-                api_response: requests.Response = requests.get(url=url, headers=headers)
-                sarif_json_response = handle_response(api_response)
-                if type(sarif_json_response) is ErrorAPIResponse:
-                    error_message = f"A Generate SARIF Report API Exception Occurred. Attempt {str(attempt + 1)} of {str(SOOSSARIFReport.API_RETRY_COUNT)}"
-                    SOOS.console_log(f"{error_message}\n{sarif_json_response.code}-{sarif_json_response.message}")
-                else:
-                    SOOS.console_log("SARIF Report")
-                    SOOS.console_log(str(sarif_json_response))
-                    break
-
-            raise_max_retry_exception(attempt=attempt, retry_count=SOOSSARIFReport.API_RETRY_COUNT)
+            
+            api_response: requests.Response = requests.get(url=url, headers=headers)
+            sarif_json_response = handle_response(api_response)
+            if type(sarif_json_response) is ErrorAPIResponse:
+                error_message = "A Generate SARIF Report API Exception Occurred"
+                SOOS.console_log(f"{error_message}\n{sarif_json_response.code}-{sarif_json_response.message}")
+            else:
+                SOOS.console_log("SARIF Report")
+                SOOS.console_log(str(sarif_json_response))
 
             if sarif_json_response is None:
                 SOOS.console_log("This project contains no issues. There will be no SARIF upload.")
