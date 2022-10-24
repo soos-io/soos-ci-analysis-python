@@ -9,6 +9,7 @@ If you've edited any of the arguments for this package:
 1. Run this script with the --helpFormatted argument (ex. soos-sca --helpFormatted)
 2. Copy the result and paste it in the README under '### Script Arguments'
 3. Make sure your terminal didn't wrap any lines, confirm the table looks correct
+4. IMPORTANT: Ensure you're going to apply the changes to the other integrations that uses the python cli
 
 If you want to create a pre release of this version once merged:
 1. Remember to have bumped the version on VERSION.txt to something like x.y.z-rc1 or whatever release candidate it is
