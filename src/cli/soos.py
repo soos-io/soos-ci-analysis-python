@@ -45,9 +45,9 @@ class GithubVersionChecker:
 
                 return version, url
             else:
-                return None
+                return None, None
         except Exception as e:
-            return None
+            return None, None
 
 
 class ErrorAPIResponse:
@@ -1592,7 +1592,7 @@ def entry_point():
         # structure_response = SOOSStructureAPI.exec(soos.context)
 
         if create_scan_api_response is None:
-            SOOS.console_log("A Create Scan Metadata API error occurred: Could not execute API." + more_info)
+            SOOS.console_log("A Create Scan Metadata API error occurred: Could not execute API.")
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
                 sys.exit(1)
             else:
@@ -1600,7 +1600,7 @@ def entry_point():
         # a response is returned but with original_response status code
         elif type(create_scan_api_response) is ErrorAPIResponse:
             SOOS.console_log(
-                f"SCAN METADATA API STATUS: {create_scan_api_response.code} =====> {create_scan_api_response.message} {more_info}")
+                f"SCAN METADATA API STATUS: {create_scan_api_response.code} =====> {create_scan_api_response.message}")
             sys.exit(1)
 
         # ## SCAN METADATA API CALL SUCCESSFUL - CONTINUE
@@ -1639,9 +1639,10 @@ def entry_point():
                 if response.status_code >= 400:
                     analysis_code = response.json()["code"]
                     analysis_message = response.json()["message"]
-                    SOOS.console_log(f"ANALYSIS API STATUS: {analysis_code} =====> {analysis_message} {more_info}")
+                    SOOS.console_log(f"ANALYSIS API STATUS: {analysis_code} =====> {analysis_message} ")
                     # 500 code means SOOS server had an unexpected error and probably didn't update scan status
                     if response.status_code >= 500:
+                        SOOS.console_log(f"You can check our service status on {more_info}")
                         SOOSPatchStatusAPI.exec(soos.context, create_scan_api_response, SCAN_STATUS_ERROR, "An unexpected error occurred while starting the scan.")
                     sys.exit(1)
 
@@ -1759,6 +1760,8 @@ if __name__ == "__main__":
     if latest_version is not None and latest_version != current_version:
         SOOS.console_log(
             f"Your current version {current_version} is out of date! Please update to the latest version {latest_version} on GitHub ({github_url}) or use the package on PyPI ({PyPI_URL}).")
+    elif latest_version is None:
+        SOOS.console_log("There was an error checking the version of the soos-sca cli. You can check it manually on https://pypi.org/project/soos-sca/")
     else:
         SOOS.console_log(f"Your current version {current_version} is the latest version available.")
 
