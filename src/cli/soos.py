@@ -9,6 +9,7 @@ import platform
 import sys
 import time
 import requests
+from enum import Enum
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path, WindowsPath, PurePath, PureWindowsPath  # User Home Folder references
@@ -49,6 +50,18 @@ class GithubVersionChecker:
         except Exception as e:
             return None, None
 
+class PackageManager(Enum):
+    DART= "Dart",
+    ERLANG= "Erlang",
+    GO="Go",
+    HOMEBREW= "Homebrew",
+    JAVA= "Java",
+    NPM= "NPM",
+    NUGET= "NuGet",
+    PHP= "PHP",
+    PYTHON= "Python",
+    RUBY= "Ruby",
+    RUST="Rust"
 
 class ErrorAPIResponse:
     code: Optional[str] = None
@@ -592,11 +605,13 @@ class SOOSManifestModel:
     filename: str
     content: any
     label: str
+    package_manager: PackageManager
 
-    def __init__(self, filename: str, label: str, content: any):
+    def __init__(self, filename: str, label: str, content: any, package_manager: PackageManager):
         self.filename = filename
         self.label = label
         self.content = content
+        self.package_manager = package_manager
 
 
 class SOOSManifestAPI:
@@ -722,7 +737,7 @@ class SOOS:
         SOOS.console_log("------------------------")
 
         MANIFEST_FILES = self.load_manifest_types()
-        manifestArr = []
+        manifest_arr = []
 
         for manifest_file in MANIFEST_FILES:
             package_manager = manifest_file['packageManager']
@@ -808,55 +823,70 @@ class SOOS:
                         with open(file_name, mode='r', encoding="utf-8") as the_file:
                             content = the_file.read()
                             if len(content.strip()) > 0:
-                                manifestArr.append(SOOSManifestModel(pure_filename, manifest_label, content))
+                                manifest_arr.append(SOOSManifestModel(pure_filename, manifest_label, content, package_manager))
                     except Exception as e:
                         SOOS.console_log("Could not send manifest: " + file_name + " due to error: " + str(e))
 
-        if len(manifestArr) == 0:
+        if len(manifest_arr) == 0:
             SOOS.console_log(
                 f"Sorry, we could not locate any manifests under {soos.context.source_code_path} Please check your files and try again.")
             return 0
 
-        elif len(manifestArr) > MAX_MANIFESTS:
-            SOOS.console_log(f"Maximum number of manifests exceeded. Taking first {MAX_MANIFESTS} only.")
+        elif len(manifest_arr) > MAX_MANIFESTS:
+            soos.console_log(f"Maximum number of manifests exceeded. Taking first {MAX_MANIFESTS} only.")
             has_more_than_maximum_manifests = True
-            manifestArr = manifestArr[0:MAX_MANIFESTS]
+            manifest_arr = manifest_arr[0:MAX_MANIFESTS]
+
+        # group manifest_arr by package manager
+        manifest_arr_by_package_manager = {}
+        for manifest in manifest_arr:
+            if manifest.package_manager not in manifest_arr_by_package_manager:
+                manifest_arr_by_package_manager[manifest.package_manager] = []
+            manifest_arr_by_package_manager[manifest.package_manager].append(manifest)
+
+        if len(manifest_arr_by_package_manager) > 1:
+            SOOS.console_log("Multiple package managers detected. Sending manifests in separate requests.")
 
         try:
-            add_manifests_response = SOOSManifestAPI.exec(
-                soos_context=soos.context,
-                project_id=project_id,
-                analysis_id=analysis_id,
-                manifests=manifestArr,
-                has_more_than_maximum_manifests=has_more_than_maximum_manifests
-            )
+            add_manifests_response = ""
+            for package_manager in manifest_arr_by_package_manager:
+                soos.console_log_verbose(f"Uploading {package_manager} manifests")
+                manifest_arr = manifest_arr_by_package_manager[package_manager]
 
-            if add_manifests_response is None or add_manifests_response.code is None:
-                SOOS.console_log(
-                    "There was some error with the Manifest API. For more information, please visit https://soos.io/support")
-                return None
-            else:
-                SOOS.console_log(
-                    f"Manifest upload status: {add_manifests_response.statusCode} || {add_manifests_response.code} || {add_manifests_response.message}")
+                add_manifests_response = SOOSManifestAPI.exec(
+                    soos_context=soos.context,
+                    project_id=project_id,
+                    analysis_id=analysis_id,
+                    manifests=manifest_arr,
+                    has_more_than_maximum_manifests=has_more_than_maximum_manifests
+                )
 
-                if type(add_manifests_response) is AddManifestsResponse:
-                    if add_manifests_response.validManifestCount is not None:
-                        SOOS.console_log(f"Valid manifest count: {add_manifests_response.validManifestCount}")
-                    if add_manifests_response.invalidManifestCount is not None:
-                        SOOS.console_log(f"Invalid manifest count: {add_manifests_response.invalidManifestCount}")
-                    if add_manifests_response.manifests is not None:
-                        for manifest in add_manifests_response.manifests:
-                            soos.console_log_verbose(f"{manifest.name}: {manifest.statusMessage}")
+                if add_manifests_response is None or add_manifests_response.code is None:
+                    SOOS.console_log(
+                        "There was some error with the Manifest API. For more information, please visit https://soos.io/support")
+                    return None
+                else:
+                    SOOS.console_log(
+                        f"Manifest upload status: {add_manifests_response.statusCode} || {add_manifests_response.code} || {add_manifests_response.message}")
 
+                    if type(add_manifests_response) is AddManifestsResponse:
+                        if add_manifests_response.validManifestCount is not None:
+                            SOOS.console_log(f"Valid manifest count: {add_manifests_response.validManifestCount}")
+                        if add_manifests_response.invalidManifestCount is not None:
+                            SOOS.console_log(f"Invalid manifest count: {add_manifests_response.invalidManifestCount}")
+                        if add_manifests_response.manifests is not None:
+                            for manifest in add_manifests_response.manifests:
+                                soos.console_log_verbose(f"{manifest.name}: {manifest.statusMessage}")
+
+        except Exception as e:
+            SOOS.console_log("Could not upload manifest files due to an error: " + str(e))
+            return None
+        finally:
             if (type(add_manifests_response) is AddManifestsResponse
                     and add_manifests_response.validManifestCount is not None):
                 return add_manifests_response.validManifestCount
             else:
                 return None
-
-        except Exception as e:
-            SOOS.console_log("Could not upload manifest files due to an error: " + str(e))
-            return None
 
     @staticmethod
     def recursive_glob(treeroot, pattern):
