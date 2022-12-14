@@ -1235,6 +1235,7 @@ class SOOSModeOfOperation:
 class SOOSAnalysisScript:
     MIN_ANALYSIS_RESULT_POLLING_INTERVAL = 10
     ASYNC_RESULT_FILE_NAME = "soos_async.json"
+    SOOS_WORKSPACE_FOLDER = "soos/workspace"
 
     def __init__(self):
 
@@ -1278,8 +1279,11 @@ class SOOSAnalysisScript:
                 self.working_directory = str(working_dir_path.expanduser().resolve())
             else:
                 self.working_directory = str(working_dir_path.resolve())
+            if not path_resolver(working_dir_path, SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER).exists():
+                path_resolver(working_dir_path, SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER).mkdir(parents=True)
 
             async_result_file_path = pure_path_resolver.joinpath(working_dir_path,
+                                                                 SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER,
                                                                  SOOSAnalysisScript.ASYNC_RESULT_FILE_NAME).resolve()
         else:
             # FAllBACK - COULD RESULT IN ERROR DEPENDING ON MODE DESIRED
