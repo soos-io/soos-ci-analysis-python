@@ -6,7 +6,7 @@ on:
       - "v*"
 
 jobs:
-  build:
+  release:
     name: "Tagged Pre Release"
     runs-on: ubuntu-latest
     steps:
