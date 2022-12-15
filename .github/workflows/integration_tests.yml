@@ -10,26 +10,6 @@ on:
       - 'release-*'
 
 jobs:
-  sca-scan-dev:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: soos-io/soos-sca-github-action@v1.2.2
-      with:
-        api_url: 'https://dev-api.soos.io/api/'
-        project_name: ${{ github.repository }}
-        client_id: ${{ secrets.DEV_SOOS_CLIENT_ID }}
-        api_key: ${{ secrets.DEV_SOOS_API_KEY }}
-  sca-scan-qa:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: soos-io/soos-sca-github-action@v1.2.2
-      with:
-        api_url: 'https://qa-api.soos.io/api/'
-        project_name: ${{ github.repository }}
-        client_id: ${{ secrets.QA_SOOS_CLIENT_ID }}
-        api_key: ${{ secrets.QA_SOOS_API_KEY }}
   sca-scan:
     runs-on: ubuntu-latest
     steps:
