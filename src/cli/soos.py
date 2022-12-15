@@ -1279,6 +1279,8 @@ class SOOSAnalysisScript:
                 self.working_directory = str(working_dir_path.expanduser().resolve())
             else:
                 self.working_directory = str(working_dir_path.resolve())
+            if not path_resolver(working_dir_path, SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER).exists():
+                path_resolver(working_dir_path, SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER).mkdir(parents=True)
 
             async_result_file_path = pure_path_resolver.joinpath(working_dir_path,
                                                                  SOOSAnalysisScript.SOOS_WORKSPACE_FOLDER,
