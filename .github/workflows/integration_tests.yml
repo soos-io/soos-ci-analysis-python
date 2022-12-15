@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: soos-io/soos-sca-github-action@v1.2.2
       with:
-        project_name: ${{ secrets.GITHUB_REPOSITORY }}
+        project_name: ${{ github.repository }}
         client_id: ${{ secrets.SOOS_CLIENT_ID }}
         api_key: ${{ secrets.SOOS_API_KEY }}
   test:
