@@ -2,6 +2,10 @@ import os
 import subprocess
 import unittest
 
+#
+# THESE TESTS REQUIRE THE ORG/PROJECT TO FAIL ON VULNERABILITIES
+#
+
 test_complete_success = "Analysis Completed Successfully"
 test_complete_fail = "Analysis complete - Failures reported"
 
