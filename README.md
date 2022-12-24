@@ -1,5 +1,7 @@
 # SOOS Security Analysis: Python Script
 
+[![Public Vulnerabilities](https://img.shields.io/endpoint?url=https%3A%2F%2Fdev-api-hooks.soos.io%2Fapi%2Fshieldsio-badges%3FbadgeType%3DVulnerabilities%26pid%3D9ve4lyt9z%26packageVersion%3Dlatest-stable)](app.soos.io/research/packages/Python/-/soos-sca)
+
 Scan your software for **vulnerabilities** and **license issues**.  Generate **SBOMs**. 
 
 Use **SOOS Core SCA** to:
