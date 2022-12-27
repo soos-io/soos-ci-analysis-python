@@ -4,6 +4,11 @@ Scan your software for **vulnerabilities** and **license issues**.  Generate **S
 
 Use **SOOS Core SCA** to:
 
+[![Public Vulnerabilities](https://img.shields.io/endpoint?url=https%3A%2F%2Fdev-api-hooks.soos.io%2Fapi%2Fshieldsio-badges%3FbadgeType%3DVulnerabilities%26pid%3D9ve4lyt9z%26packageVersion%3Dlatest-stable)](https://app.soos.io/research/packages/Python/-/soos-sca)
+[![Release Date](https://img.shields.io/endpoint?url=https%3A%2F%2Fdev-api-hooks.soos.io%2Fapi%2Fshieldsio-badges%3FbadgeType%3DReleaseDate%26pid%3D9ve4lyt9z%26packageVersion%3Dlatest-stable)](https://app.soos.io/research/packages/Python/-/soos-sca)
+[![License](https://img.shields.io/endpoint?url=https%3A%2F%2Fdev-api-hooks.soos.io%2Fapi%2Fshieldsio-badges%3FbadgeType%3DLicense%26pid%3D9ve4lyt9z%26packageVersion%3Dlatest-stable)](https://app.soos.io/research/packages/Python/-/soos-sca)
+[![Total Downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Fdev-api-hooks.soos.io%2Fapi%2Fshieldsio-badges%3FbadgeType%3DDownloads%26pid%3D9ve4lyt9z%26packageVersion%3Dlatest-stable)](https://app.soos.io/research/packages/Python/-/soos-sca)
+
 1. Find, fix and monitor known **vulnerabilities**
 2. Review open source **license usage** within your project
 3. Track tickets in **Jira** or **GitHub** Issues
