@@ -10,7 +10,6 @@ Use **SOOS Core SCA** to:
 4. Generate an **SBOM** 
 
 ## Supported Languages and Package Managers
-
 Our full list of supported manifest formats can be found [here](https://kb.soos.io/help/soos-languages-supported).
 
 ## Need an Account?
@@ -59,5 +58,4 @@ See [Windows Batch File Gist](https://gist.githubusercontent.com/soostech/37134f
 
 
 ## Feedback and Support
-
 See [SOOS Knowledge Base](https://kb.soos.io/help)
