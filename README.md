@@ -59,3 +59,4 @@ See [Windows Batch File Gist](https://gist.githubusercontent.com/soostech/37134f
 
 ## Feedback and Support
 See [SOOS Knowledge Base](https://kb.soos.io/help)
+
