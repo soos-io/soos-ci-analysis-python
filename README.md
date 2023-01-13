@@ -1,13 +1,15 @@
-# SOOS Security Analysis: Python Script
+# [SOOS Core SCA](https://soos.io/sca-product)
 
-Scan your software for **vulnerabilities** and **license issues**.  Generate **SBOMs**. 
+SOOS is an independent software security company, located in Winooski, VT USA, building security software for your team. [SOOS, Software security, simplified](https://soos.io).
 
-Use **SOOS Core SCA** to:
+Use SOOS to scan your software for [vulnerabilities](https://app.soos.io/research/vulnerabilities) and [open source license](https://app.soos.io/research/licenses) issues with [SOOS Core SCA](https://soos.io/sca-product). [Generate SBOMs](https://kb.soos.io/help/generating-a-software-bill-of-materials-sbom). Govern your open source dependencies. Run the [SOOS DAST vulnerability scanner](https://soos.io/dast-product) against your web apps or APIs.
 
-1. Find, fix and monitor known **vulnerabilities**
-2. Review open source **license usage** within your project
-3. Track tickets in **Jira** or **GitHub** Issues
-4. Generate an **SBOM** 
+[Demo SOOS](https://app.soos.io/demo) or [Register for a Free Trial](https://app.soos.io/register).
+
+If you maintain an Open Source project, sign up for the Free as in Beer [SOOS Community Edition](https://soos.io/products/community-edition).
+
+## soos-ci-analysis-python
+Python script to run SOOS Core SCA
 
 ## Supported Languages and Package Managers
 Our full list of supported manifest formats can be found [here](https://kb.soos.io/help/soos-languages-supported).
