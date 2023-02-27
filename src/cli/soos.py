@@ -1726,7 +1726,7 @@ def entry_point():
                 SOOS.console_log(scan_message)
             else:
                 scan_status = SCAN_STATUS_INCOMPLETE
-                scan_message = "No valid manifests found, cannot continue. For more help, please visit https://soos.io/support"
+                scan_message = "No valid manifests found, cannot continue. For more help, please visit https://kb.soos.io/help/error-no-valid-manifests-found"
                 SOOS.console_log(scan_message)
             SOOSPatchStatusAPI.exec(soos.context, create_scan_api_response, scan_status, scan_message)
             if soos.script.on_failure == SOOSOnFailure.FAIL_THE_BUILD:
