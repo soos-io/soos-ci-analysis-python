@@ -849,6 +849,7 @@ class SOOS:
 
         try:
             add_manifests_response = ""
+            total_valid_manifest_count = 0
             for package_manager in manifest_arr_by_package_manager:
                 soos.console_log_verbose(f"Uploading {package_manager} manifests")
                 manifest_arr = manifest_arr_by_package_manager[package_manager]
@@ -872,6 +873,7 @@ class SOOS:
                     if type(add_manifests_response) is AddManifestsResponse:
                         if add_manifests_response.validManifestCount is not None:
                             SOOS.console_log(f"Valid manifest count: {add_manifests_response.validManifestCount}")
+                            total_valid_manifest_count += add_manifests_response.validManifestCount
                         if add_manifests_response.invalidManifestCount is not None:
                             SOOS.console_log(f"Invalid manifest count: {add_manifests_response.invalidManifestCount}")
                         if add_manifests_response.manifests is not None:
@@ -882,9 +884,9 @@ class SOOS:
             SOOS.console_log("Could not upload manifest files due to an error: " + str(e))
             return None
         finally:
-            if (type(add_manifests_response) is AddManifestsResponse
-                    and add_manifests_response.validManifestCount is not None):
-                return add_manifests_response.validManifestCount
+            if total_valid_manifest_count > 0:
+                SOOS.console_log(f"Total valid manifest sent: {total_valid_manifest_count}")
+                return total_valid_manifest_count
             else:
                 return None
 
