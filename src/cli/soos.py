@@ -655,7 +655,7 @@ class SOOSManifestAPI:
             suffix = i if i > 0 else ""
             files.append(("file" + str(suffix), (value.filename, value.content)))
             body.append(("parentFolder" + str(suffix), value.label))
-        
+
         try:
             SOOS.console_log("*** Posting manifests to: " + api_url)
             # manifest_content is class str, convert to dict
@@ -848,7 +848,7 @@ class SOOS:
             SOOS.console_log("Multiple package managers detected. Sending manifests in separate requests.")
 
         try:
-            add_manifests_response = ""
+            add_manifests_responses = []
             for package_manager in manifest_arr_by_package_manager:
                 soos.console_log_verbose(f"Uploading {package_manager} manifests")
                 manifest_arr = manifest_arr_by_package_manager[package_manager]
@@ -860,6 +860,7 @@ class SOOS:
                     manifests=manifest_arr,
                     has_more_than_maximum_manifests=has_more_than_maximum_manifests
                 )
+                add_manifests_responses.append(add_manifests_response)
 
                 if add_manifests_response is None or add_manifests_response.code is None:
                     SOOS.console_log(
@@ -882,11 +883,15 @@ class SOOS:
             SOOS.console_log("Could not upload manifest files due to an error: " + str(e))
             return None
         finally:
-            if (type(add_manifests_response) is AddManifestsResponse
-                    and add_manifests_response.validManifestCount is not None):
-                return add_manifests_response.validManifestCount
+            valid_manifest_count = 0
+            for add_manifests_response in add_manifests_responses:
+                if type(add_manifests_response) is not AddManifestsResponse:
+                    break
+                if type(add_manifests_response.validManifestCount) is not None:
+                    valid_manifest_count += add_manifests_response.validManifestCount
             else:
-                return None
+                return valid_manifest_count
+            return None
 
     @staticmethod
     def recursive_glob(treeroot, pattern):
@@ -1158,7 +1163,7 @@ class SOOSSARIFReport:
 
             headers = generate_header(api_key=context.api_key, content_type="application/json")
             sarif_json_response = None
-            
+
             api_response: requests.Response = requests.get(url=url, headers=headers)
             sarif_json_response = handle_response(api_response)
             if type(sarif_json_response) is ErrorAPIResponse:
@@ -1338,7 +1343,7 @@ class SOOSAnalysisScript:
             for package_managers in temp_package_managers:
                 self.package_managers.append(package_managers.strip())
         else:
-            SOOS.console_log("PACKAGE MANAGERS: <NONE>")    
+            SOOS.console_log("PACKAGE MANAGERS: <NONE>")
 
         # WORKING DIRECTORY & ASYNC RESUlT FILE
         self.__set_working_dir_and_async_result_file__(script_args.working_directory)
@@ -1449,7 +1454,7 @@ class SOOSAnalysisScript:
                             help="A list of package managers, delimited by comma, to include when searching for manifest files.",
                             type=str,
                             required=False
-                            )              
+                            )
 
         # CONTEXT PARAMETERS
 
