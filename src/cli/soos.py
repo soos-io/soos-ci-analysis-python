@@ -875,7 +875,7 @@ class SOOS:
                             SOOS.console_log(f"Valid manifest count: {add_manifests_response.validManifestCount}")
                             total_valid_manifest_count += add_manifests_response.validManifestCount
                         if add_manifests_response.invalidManifestCount is not None:
-                            SOOS.console_log(f"Invalid manifest count: {add_manifests_response.invalidManifestCount}")
+                            SOOS.console_log(f"Ignored manifest count: {add_manifests_response.invalidManifestCount}")
                         if add_manifests_response.manifests is not None:
                             for manifest in add_manifests_response.manifests:
                                 soos.console_log_verbose(f"{manifest.name}: {manifest.statusMessage}")
@@ -885,7 +885,7 @@ class SOOS:
             return None
         finally:
             if total_valid_manifest_count > 0:
-                SOOS.console_log(f"Total valid manifest sent: {total_valid_manifest_count}")
+                SOOS.console_log(f"Total valid manifests sent: {total_valid_manifest_count}")
                 return total_valid_manifest_count
             else:
                 return None
