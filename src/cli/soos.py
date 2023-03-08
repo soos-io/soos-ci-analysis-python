@@ -1163,6 +1163,11 @@ class SOOSSARIFReport:
             
             api_response: requests.Response = requests.get(url=url, headers=headers)
             sarif_json_response = handle_response(api_response)
+
+            if sarif_json_response is None or sarif_json_response.code == "ApiValidationBadRequest":
+                SOOS.console_log("This project contains no issues. There will be no SARIF upload.")
+                return
+
             if type(sarif_json_response) is ErrorAPIResponse:
                 error_message = "A Generate SARIF Report API Exception Occurred"
                 SOOS.console_log(f"{error_message}\n{sarif_json_response.code}-{sarif_json_response.message}")
@@ -1170,44 +1175,40 @@ class SOOSSARIFReport:
                 SOOS.console_log("SARIF Report")
                 SOOS.console_log(str(sarif_json_response))
 
-            if sarif_json_response is None:
-                SOOS.console_log("This project contains no issues. There will be no SARIF upload.")
-                return
+            SOOS.console_log("Uploading SARIF Report to GitHub")
+            sarif_report_str = json.dumps(sarif_json_response)
+            compressed_sarif_response = base64.b64encode(gzip.compress(bytes(sarif_report_str, 'UTF-8')))
+
+            github_body_request = {
+                "commit_sha": context.commit_hash,
+                "ref": context.branch_name,
+                "sarif": compressed_sarif_response.decode(encoding='UTF-8'),
+                "started_at": ANALYSIS_START_TIME,
+                "tool_name": "SOOS SCA"
+            }
+
+            github_sarif_url = SOOSSARIFReport.generate_github_sarif_url(project_name=context.project_name)
+            headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"token {context.github_pat}"}
+
+            sarif_github_response = requests.post(url=github_sarif_url, data=json.dumps(github_body_request),
+                                                  headers=headers)
+
+            if sarif_github_response.status_code >= 400:
+                SOOSSARIFReport.handle_github_sarif_error(status=sarif_github_response.status_code,
+                                                          json_response=sarif_github_response.json())
             else:
-                SOOS.console_log("Uploading SARIF Report to GitHub")
-                sarif_report_str = json.dumps(sarif_json_response)
-                compressed_sarif_response = base64.b64encode(gzip.compress(bytes(sarif_report_str, 'UTF-8')))
+                sarif_id = sarif_github_response.json()["id"]
+                sarif_url = sarif_github_response.json()["url"]
+                github_sarif_report_status = requests.get(url=sarif_url, headers=headers)
 
-                github_body_request = {
-                    "commit_sha": context.commit_hash,
-                    "ref": context.branch_name,
-                    "sarif": compressed_sarif_response.decode(encoding='UTF-8'),
-                    "started_at": ANALYSIS_START_TIME,
-                    "tool_name": "SOOS SCA"
-                }
-
-                github_sarif_url = SOOSSARIFReport.generate_github_sarif_url(project_name=context.project_name)
-                headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"token {context.github_pat}"}
-
-                sarif_github_response = requests.post(url=github_sarif_url, data=json.dumps(github_body_request),
-                                                      headers=headers)
-
-                if sarif_github_response.status_code >= 400:
-                    SOOSSARIFReport.handle_github_sarif_error(status=sarif_github_response.status_code,
-                                                              json_response=sarif_github_response.json())
-                else:
-                    sarif_id = sarif_github_response.json()["id"]
-                    sarif_url = sarif_github_response.json()["url"]
-                    github_sarif_report_status = requests.get(url=sarif_url, headers=headers)
-
-                    if github_sarif_report_status.ok:
-                        processing_status = github_sarif_report_status.json()[
-                            "processing_status"] if "processing_status" in github_sarif_report_status.json() else None
-                        errors = github_sarif_report_status.json()[
-                            "errors"] if "errors" in github_sarif_report_status.json() else None
-                        SOOS.console_log(f"Upload SARIF Report to Github Status: {processing_status}")
-                        if errors is not None and len(errors) > 0:
-                            SOOS.console_log(f"Errors: {str(errors)}")
+                if github_sarif_report_status.ok:
+                    processing_status = github_sarif_report_status.json()[
+                        "processing_status"] if "processing_status" in github_sarif_report_status.json() else None
+                    errors = github_sarif_report_status.json()[
+                        "errors"] if "errors" in github_sarif_report_status.json() else None
+                    SOOS.console_log(f"Upload SARIF Report to Github Status: {processing_status}")
+                    if errors is not None and len(errors) > 0:
+                        SOOS.console_log(f"Errors: {str(errors)}")
 
         except Exception as sarif_exception:
             SOOS.console_log(f"ERROR: {str(sarif_exception)}")
