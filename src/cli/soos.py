@@ -1163,12 +1163,12 @@ class SOOSSARIFReport:
             
             api_response: requests.Response = requests.get(url=url, headers=headers)
             sarif_json_response = handle_response(api_response)
-
-            if sarif_json_response is None or sarif_json_response.code == "ApiValidationBadRequest":
-                SOOS.console_log("This project contains no issues. There will be no SARIF upload.")
+            if sarif_json_response is None:
                 return
-
-            if type(sarif_json_response) is ErrorAPIResponse:
+            if type(sarif_json_response) is ErrorAPIResponse and sarif_json_response.code == "ApiValidationBadRequest":
+                SOOS.console_log(f"{sarif_json_response.message}")
+                return
+            elif type(sarif_json_response) is ErrorAPIResponse:
                 error_message = "A Generate SARIF Report API Exception Occurred"
                 SOOS.console_log(f"{error_message}\n{sarif_json_response.code}-{sarif_json_response.message}")
             else:
