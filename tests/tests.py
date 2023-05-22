@@ -37,8 +37,8 @@ class DartTestCases(unittest.TestCase):
                                  text=True)
 
         print(process.stdout)
-        self.assertEqual(process.returncode, 0, "Invalid return code.")
-        self.assertEqual(process.stdout.count(test_complete_success), 1, "Invalid completion message.")
+        self.assertEqual(process.returncode, 1, "Invalid return code.")
+        self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
         # self.assertEqual(process.stdout.count(vulnerabilities(2)), 1)
         # self.assertEqual(process.stdout.count(violations(5)), 1)
 
