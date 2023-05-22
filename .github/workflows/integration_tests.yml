@@ -19,6 +19,7 @@ jobs:
         project_name: ${{ github.event.repository.name }}
         client_id: ${{ secrets.SOOS_CLIENT_ID }}
         api_key: ${{ secrets.SOOS_API_KEY }}
+        directories_to_exclude: tests/manifests
   test:
     runs-on: ubuntu-latest
     steps:
