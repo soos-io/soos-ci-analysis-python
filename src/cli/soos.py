@@ -51,6 +51,7 @@ class GithubVersionChecker:
             return None, None
 
 class PackageManager(Enum):
+    CFAMILY = "CFamily",
     DART= "Dart",
     ERLANG= "Erlang",
     GO="Go",
