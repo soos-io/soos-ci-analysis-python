@@ -21,6 +21,7 @@ ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 MAX_MANIFESTS = 50
 SCAN_STATUS_ERROR = "Error"
 SCAN_STATUS_INCOMPLETE = "Incomplete"
+CONTRIBUTING_DEVELOPER = "unknown"
 
 with open(os.path.join(os.path.dirname(__file__), "VERSION.txt")) as version_file:
   SCRIPT_VERSION = version_file.read().strip()
@@ -63,6 +64,30 @@ class PackageManager(Enum):
     PYTHON= "Python",
     RUBY= "Ruby",
     RUST="Rust"
+
+class IntegrationName(Enum):
+    CODEBUILD = "AWSCodeBuild"
+    BAMBOO = "Bamboo"
+    BITBUCKET = "BitBucket"
+    CIRCLECI = "CircleCI"
+    CODE_SHIP = "CodeShip"
+    GITHUB_ACTIONS = "GitHub"
+    GITLAB = "GitLab"
+    JENKINS = "Jenkins"
+    TEAMCITY = "TeamCity"
+    TRAVIS = "TravisCI"
+
+class ContributorVariableNames(Enum):
+    AWSCodeBuild = "CODEBUILD_BUILD_INITIATOR"
+    Bamboo = "bamboo_planRepository_1_username"
+    BitBucket = "BITBUCKET_STEP_TRIGGERER_UUID"
+    CircleCI = "CIRCLE_USERNAME"
+    CodeShip = "CI_COMMITTER_USERNAME"
+    GitHub = "GITHUB_ACTOR"
+    GitLab = "GITLAB_USER_LOGIN"
+    Jenkins = "CHANGE_AUTHOR"
+    TeamCity = "teamcity.build.triggeredBy.username"
+    TravisCI = "TRAVIS_COMMIT"
 
 class ErrorAPIResponse:
     code: Optional[str] = None
@@ -563,6 +588,15 @@ class SOOSScanAPI:
             set_body_value(start_scan_data, 'operatingEnvironment', context.operating_environment)
             set_body_value(start_scan_data, 'integrationName', context.integration_name)
             set_body_value(start_scan_data, 'appVersion', context.app_version)
+
+            if context.integration_name is not None:
+                integration_name_enum = next(
+                    (item for item in IntegrationName if item.value == context.integration_name), None)
+
+                if integration_name_enum:  # Check if we found a match in IntegrationName
+                    integration_variable_name = ContributorVariableNames[integration_name_enum.value].value
+                    integration_variable_value = os.environ.get(integration_variable_name)
+                    context.contributing_developer = integration_variable_value
 
             if context.contributing_developer is not None:
                 start_scan_data['contributingDeveloperAudit'] = [{
