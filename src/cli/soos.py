@@ -586,15 +586,15 @@ class SOOSScanAPI:
                 integration_name_enum = next(
                     (item for item in IntegrationName if item.value == context.integration_name), None)
 
-            if integration_name_enum:  # Check if we found a match in IntegrationName
+            if integration_name_enum:
                 integration_variable_name = ContributorVariableNames[integration_name_enum.value].value
                 contributing_developer = os.environ.get(integration_variable_name)
 
             if contributing_developer is not None:
                 start_scan_data['contributingDeveloperAudit'] = [{
-                "source": "EnvironmentVariable",
-                "sourceName": integration_variable_name,
-                "contributingDeveloperId": context.contributing_developer
+                    "source": "EnvironmentVariable",
+                    "sourceName": integration_variable_name,
+                    "contributingDeveloperId": context.contributing_developer
                 }]
 
             headers = generate_header(api_key=context.api_key, content_type="application/json")
