@@ -581,6 +581,7 @@ class SOOSScanAPI:
 
             integration_variable_name = None
             contributing_developer = None
+            integration_name_enum = None
 
             if context.integration_name is not None:
                 integration_name_enum = next(
