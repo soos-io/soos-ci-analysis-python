@@ -595,7 +595,7 @@ class SOOSScanAPI:
                 start_scan_data['contributingDeveloperAudit'] = [{
                     "source": "EnvironmentVariable",
                     "sourceName": integration_variable_name,
-                    "contributingDeveloperId": context.contributing_developer
+                    "contributingDeveloperId": contributing_developer
                 }]
 
             headers = generate_header(api_key=context.api_key, content_type="application/json")
