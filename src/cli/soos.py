@@ -21,7 +21,6 @@ ANALYSIS_START_TIME = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 MAX_MANIFESTS = 50
 SCAN_STATUS_ERROR = "Error"
 SCAN_STATUS_INCOMPLETE = "Incomplete"
-CONTRIBUTING_DEVELOPER = "unknown"
 
 with open(os.path.join(os.path.dirname(__file__), "VERSION.txt")) as version_file:
   SCRIPT_VERSION = version_file.read().strip()
@@ -86,7 +85,7 @@ class ContributorVariableNames(Enum):
     GitHub = "GITHUB_ACTOR"
     GitLab = "GITLAB_USER_LOGIN"
     Jenkins = "CHANGE_AUTHOR"
-    TeamCity = "teamcity.build.triggeredBy.username"
+    TeamCity = "TEAMCITY_BUILD_TRIGGEREDBY_USERNAME"
     TravisCI = "TRAVIS_COMMIT"
 
 class ErrorAPIResponse:
@@ -254,9 +253,6 @@ class SOOSStructureAPI:
 
         if soos_context.app_version is not None:
             structure_api_data["appVersion"] = soos_context.app_version
-        
-        if soos_context.contributing_developer is not None:
-            structure_api_data["contributingDeveloper"] = soos_context.contributing_developer
 
         try:
             kernel = requests.post(
@@ -304,7 +300,6 @@ class SOOSContext:
         self.integration_type = "Script"
         self.generate_sarif_report = False
         self.github_pat = None
-        self.contributing_developer = None
 
     def __set_source_code_path__(self, source_code_directory):
         """
@@ -461,11 +456,6 @@ class SOOSContext:
                 self.build_uri = str(script_args.build_uri)
                 SOOS.console_log("SOOS_BUILD_URI Parameter Loaded: " + self.build_uri)
 
-        if script_args.contributing_developer is not None:
-            if len(script_args.contributing_developer) > 0:
-                self.contributing_developer = str(script_args.contributing_developer)
-                SOOS.console_log("SOOS_CONTRIBUTING_DEVELOPER Parameter Loaded: " + self.contributing_developer)
-
         # Operating environment, if missing, will default to platform
 
         if script_args.operating_environment is not None and len(script_args.operating_environment) > 0:
@@ -589,20 +579,22 @@ class SOOSScanAPI:
             set_body_value(start_scan_data, 'integrationName', context.integration_name)
             set_body_value(start_scan_data, 'appVersion', context.app_version)
 
+            integration_variable_name = None
+            contributing_developer = None
+
             if context.integration_name is not None:
                 integration_name_enum = next(
                     (item for item in IntegrationName if item.value == context.integration_name), None)
 
-                if integration_name_enum:  # Check if we found a match in IntegrationName
-                    integration_variable_name = ContributorVariableNames[integration_name_enum.value].value
-                    integration_variable_value = os.environ.get(integration_variable_name)
-                    context.contributing_developer = integration_variable_value
+            if integration_name_enum:  # Check if we found a match in IntegrationName
+                integration_variable_name = ContributorVariableNames[integration_name_enum.value].value
+                contributing_developer = os.environ.get(integration_variable_name)
 
-            if context.contributing_developer is not None:
+            if contributing_developer is not None:
                 start_scan_data['contributingDeveloperAudit'] = [{
-                    "source": "EnvironmentVariable",
-                    "sourceName": "commit",
-                    "contributingDeveloperId": context.contributing_developer
+                "source": "EnvironmentVariable",
+                "sourceName": integration_variable_name,
+                "contributingDeveloperId": context.contributing_developer
                 }]
 
             headers = generate_header(api_key=context.api_key, content_type="application/json")
@@ -1628,13 +1620,6 @@ class SOOSAnalysisScript:
                             help="GitHub Personal Authorization Token",
                             type=str,
                             default=False,
-                            required=False
-                            )
-        
-        parser.add_argument("-cdev", "--contributingDeveloper", dest="contributing_developer",
-                            help="Contributing developer. Intended for internal use only",
-                            type=str,
-                            default=None,
                             required=False
                             )
 
