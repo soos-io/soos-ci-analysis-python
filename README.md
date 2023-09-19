@@ -55,8 +55,7 @@ See [Windows Batch File Gist](https://gist.githubusercontent.com/soostech/37134f
 | -appver, --appVersion | None | App Version. Intended for internal use only. |
 | -intn, --integrationName | None | Integration Name (e.g. Provider) |
 | -intt, --integrationType | None | Integration Type. Intended for internal use only. |
-| -sarif | False | Upload SARIF Report to GitHub |
-| -gpat | False | GitHub Personal Authorization Token |
+| -sarif | False | Generates SARIF Report that later can be uploaded to GitHub |
 
 
 ## Feedback and Support
