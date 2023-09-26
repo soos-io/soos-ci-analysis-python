@@ -1137,7 +1137,7 @@ class SOOSProjectSettingsAPI:
                 )
     
         except requests.RequestException as e:
-             SOOS.console_log(f"Project Settings API Exception Occurred: {str(e)}")  # Logging exception message
+             SOOS.console_log(f"Project Settings API Exception Occurred: {str(e)}")
     
         return project_settings_response
 
@@ -1697,10 +1697,8 @@ def entry_point():
         project_settings = SOOSProjectSettingsAPI.exec(soos.context, create_scan_api_response.projectHash)
         
         project_settings_dict = project_settings.json()
-        use_lock_file = project_settings_dict.get('useLockFile', False)  # Default to False if the key is not present
-        use_lock_file = False if use_lock_file is None else use_lock_file  # Consider None as False
-
-        # Now get ready to send your manifests out for Start Analysis API
+        use_lock_file = project_settings_dict.get('useLockFile', False)
+        use_lock_file = False if use_lock_file is None else use_lock_file
 
         valid_manifests_count = soos.send_manifests(
             project_id=create_scan_api_response.projectHash,
