@@ -129,12 +129,11 @@ class ExcludeTestCases(unittest.TestCase):
         files_to_exclude = "pubspec.yaml, *composer.json, cargo* "
         expected_text = f"FILES_TO_EXCLUDE: {files_to_exclude.strip()}"
         self.assertEqual(process.stdout.count(expected_text), 1)
-        self.assertEqual(process.stdout.count('Skipping file due to files_to_exclude:'), 4)
+        self.assertEqual(process.stdout.count('Skipping file due to files_to_exclude:'), 3)
         self.assertEqual(process.stdout.count('manifests/exclude_files/pubspec.yaml'), 1)
         self.assertEqual(process.stdout.count('manifests/exclude_files/composer.json'), 1)
         self.assertEqual(process.stdout.count('manifests/exclude_files/cargo.toml'), 1)
-        self.assertEqual(process.stdout.count('manifests/exclude_files/cargo.lock'), 1)
-        self.assertEqual(process.stdout.count('Found manifest file:'), 2)
+        self.assertEqual(process.stdout.count('Found manifest file:'), 1)
         self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
 
     def test_exclude_dirs(self):
@@ -143,11 +142,10 @@ class ExcludeTestCases(unittest.TestCase):
                                  text=True)
         print(process.stdout)
         self.assertEqual(process.returncode, 1, "Invalid return code.")
-        self.assertEqual(process.stdout.count('Skipping file due to dirs_to_exclude:'), 3)
+        self.assertEqual(process.stdout.count('Skipping file due to dirs_to_exclude:'), 2)
         self.assertEqual(process.stdout.count('manifests/exclude_dirs/exclude/composer.json'), 1)
         self.assertEqual(process.stdout.count('manifests/exclude_dirs/exclude/cargo.toml'), 1)
-        self.assertEqual(process.stdout.count('manifests/exclude_dirs/exclude/cargo.lock'), 1)
-        self.assertEqual(process.stdout.count('Found manifest file:'), 3)
+        self.assertEqual(process.stdout.count('Found manifest file:'), 2)
         self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
 
 

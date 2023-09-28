@@ -770,7 +770,17 @@ class SOOS:
         )
 
     # returns count of valid manifests that were uploaded or None on error
-    def send_manifests(self, project_id, analysis_id, dirs_to_exclude, files_to_exclude, package_managers) -> Optional[int]:
+    def send_manifests(self, project_id, analysis_id, dirs_to_exclude, files_to_exclude, package_managers, use_lock_file) -> Optional[int]:
+
+        def is_valid_lockfile_pattern(pattern: str, use_lock_file: bool) -> bool:
+            lock_patterns = [".lockfile", ".lock", "-lock.json"]
+            return any(lock in pattern for lock in lock_patterns) if use_lock_file else not any(lock in pattern for lock in lock_patterns)
+
+        def build_looking_for_files_str(use_lock_file: bool) -> str:
+            if use_lock_file:
+                return "Lock file is on, non-lock files will be ignored."
+            else:
+                return "Lock file is off, lock files will be ignored."
 
         has_more_than_maximum_manifests = False
 
@@ -779,6 +789,7 @@ class SOOS:
         print()
         SOOS.console_log("------------------------")
         SOOS.console_log("Begin Recursive Manifest Search")
+        SOOS.console_log(build_looking_for_files_str(use_lock_file))
         SOOS.console_log("------------------------")
 
         MANIFEST_FILES = self.load_manifest_types()
@@ -793,12 +804,14 @@ class SOOS:
 
             for entries in manifest_file["manifests"]:
                 pattern = entries["pattern"]
+                # Filter lockfiles or not based on use_lock_file
+                if not is_valid_lockfile_pattern(pattern, use_lock_file):
+                    continue 
+                
                 candidate_files = self.find_manifest_files(pattern=pattern)
 
                 for cf in candidate_files:
                     files.append(cf)
-            # iterate each
-            # avoid directories to exclude
 
             for file_name in files:
                 exclude = False
@@ -862,6 +875,9 @@ class SOOS:
                                              "Result: Setting immediate parent folder to <blank string>"
                                              )
                             pass
+                        
+                        # remove GitHub path if exists, this will avoid running on cloudflare blocking so often
+                        parent_folder = parent_folder.replace("/github/workspace", "")
 
                         manifest_label = parent_folder
 
@@ -1094,6 +1110,36 @@ class SOOSAnalysisStartAPI:
             SOOS.console_log("Analysis Start API Exception Occurred. ")
 
         return analysis_start_response
+    
+class SOOSProjectSettingsAPI:
+
+    URI_TEMPLATE = "{soos_base_uri}clients/{soos_client_id}/projects/{soos_project_id}/settings"
+
+    @staticmethod
+    def generate_api_url(soos_context, project_id):
+        return SOOSProjectSettingsAPI.URI_TEMPLATE.format(soos_base_uri=soos_context.base_uri.replace("api.soos.io", "api-projects.soos.io"),
+                                                        soos_client_id=soos_context.client_id,
+                                                        soos_project_id=project_id)
+
+    @staticmethod
+    def exec(soos_context, project_id):
+
+        url = SOOSProjectSettingsAPI.generate_api_url(soos_context, project_id)
+    
+        project_settings_response = None
+    
+        try:
+            project_settings_response = requests.get(
+                url=url,
+                params = {'fallback': 'true'},
+                headers={'x-soos-apikey': soos_context.api_key,
+                            'Content-Type': 'application/json'}
+                )
+    
+        except requests.RequestException as e:
+             SOOS.console_log(f"Project Settings API Exception Occurred: {str(e)}")
+    
+        return project_settings_response
 
 
 class SOOSAnalysisResultAPI:
@@ -1647,14 +1693,20 @@ def entry_point():
         SOOS.console_log("Analysis Id: " + create_scan_api_response.analysisId)
         SOOS.console_log("Project Id:  " + create_scan_api_response.projectHash)
         SOOS.console_log("Scan Status URL: " + create_scan_api_response.scanStatusUrl)
-        # Now get ready to send your manifests out for Start Analysis API
+        # Get Project Settings so we can filter lock or non lock files
+        project_settings = SOOSProjectSettingsAPI.exec(soos.context, create_scan_api_response.projectHash)
+        
+        project_settings_dict = project_settings.json()
+        use_lock_file = project_settings_dict.get('useLockFile', False)
+        use_lock_file = False if use_lock_file is None else use_lock_file
 
         valid_manifests_count = soos.send_manifests(
             project_id=create_scan_api_response.projectHash,
             analysis_id=create_scan_api_response.analysisId,
             dirs_to_exclude=soos.script.directories_to_exclude,
             files_to_exclude=soos.script.files_to_exclude,
-            package_managers=soos.script.package_managers
+            package_managers=soos.script.package_managers,
+            use_lock_file=use_lock_file,
         )
 
         if valid_manifests_count is not None and valid_manifests_count > 0:
