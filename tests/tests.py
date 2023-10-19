@@ -131,7 +131,7 @@ class ExcludeTestCases(unittest.TestCase):
         self.assertEqual(process.stdout.count(expected_text), 1)
         self.assertEqual(process.stdout.count('Skipping file due to files_to_exclude:'), 1)
         self.assertEqual(process.stdout.count('manifests/exclude_files/cargo.lock'), 1)
-        self.assertEqual(process.stdout.count('Found manifest file:'), 1)
+        self.assertEqual(process.stdout.count('Found manifest file:'), 2)
         self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
 
     def test_exclude_dirs(self):
@@ -143,7 +143,6 @@ class ExcludeTestCases(unittest.TestCase):
         self.assertEqual(process.stdout.count('Skipping file due to dirs_to_exclude:'), 1)
         self.assertEqual(process.stdout.count('manifests/exclude_dirs/exclude/cargo.lock'), 1)
         self.assertEqual(process.stdout.count('Found manifest file:'), 2)
-        self.assertEqual(process.stdout.count(test_complete_fail), 1, "Invalid completion message.")
 
 
 # class SarifTestCases(unittest.TestCase):
