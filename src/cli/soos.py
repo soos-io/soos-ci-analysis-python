@@ -188,7 +188,7 @@ def set_body_value(body: Dict, name: str, value: Any):
 
 
 def handle_response(api_response: requests.Response):
-    if api_response.status_code == 403 and 'application/json' not in response.headers.get('Content-Type', ''):
+    if api_response.status_code == 403 and 'application/json' not in api_response.headers.get('Content-Type', ''):
         # WAF responses may be HTML, so fake a coded message
         waf_block_response = {'code': 'Forbidden', 'message': 'Forbidden. Your request may have been blocked.'}
         return ErrorAPIResponse(waf_block_response)
