@@ -92,6 +92,7 @@ class ContributorVariableNames(Enum):
 class ErrorAPIResponse:
     code: Optional[str] = None
     message: Optional[str] = None
+    statusCode: Optional[str] = None
 
     def __init__(self, api_response):
         for key in api_response:
@@ -99,6 +100,7 @@ class ErrorAPIResponse:
 
         self.code = api_response["code"] if "code" in api_response else None
         self.message = api_response["message"] if "message" in api_response else None
+        self.statusCode = api_response["statusCode"] if "statusCode" in api_response else None
 
 
 class SOOSStructureAPIResponse:
