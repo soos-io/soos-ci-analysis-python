@@ -92,6 +92,7 @@ class ContributorVariableNames(Enum):
 class ErrorAPIResponse:
     code: Optional[str] = None
     message: Optional[str] = None
+    statusCode: Optional[str] = None
 
     def __init__(self, api_response):
         for key in api_response:
@@ -99,6 +100,7 @@ class ErrorAPIResponse:
 
         self.code = api_response["code"] if "code" in api_response else None
         self.message = api_response["message"] if "message" in api_response else None
+        self.statusCode = api_response["statusCode"] if "statusCode" in api_response else None
 
 
 class SOOSStructureAPIResponse:
@@ -190,7 +192,7 @@ def set_body_value(body: Dict, name: str, value: Any):
 def handle_response(api_response: requests.Response):
     if api_response.status_code == 403 and 'application/json' not in api_response.headers.get('Content-Type', ''):
         # WAF responses may be HTML, so fake a coded message
-        waf_block_response = {'code': 'Forbidden', 'message': 'Forbidden. Your request may have been blocked.'}
+        waf_block_response = {'code': 'Forbidden', 'message': 'Forbidden. Your request may have been blocked.', 'statusCode': '403'}
         return ErrorAPIResponse(waf_block_response)
     elif api_response.status_code in range(400, 600):
         return ErrorAPIResponse(api_response.json())
