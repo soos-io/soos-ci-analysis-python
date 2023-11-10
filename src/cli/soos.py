@@ -950,6 +950,7 @@ class SOOS:
             SOOS.console_log("Could not upload manifest files due to an error: " + str(e))
             return None
         finally:
+            # total may be zero
             SOOS.console_log(f"Total valid manifests sent: {total_valid_manifest_count}")
             return total_valid_manifest_count
 
