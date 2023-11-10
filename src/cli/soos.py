@@ -823,7 +823,6 @@ class SOOS:
                 exclude = False
                 pure_filename = os.path.basename(file_name)
                 pure_directory = os.path.dirname(file_name)
-                immediate_parent_folder = ""
 
                 for exclude_dir in dirs_to_exclude:
                     # Directories to Exclude
@@ -951,11 +950,9 @@ class SOOS:
             SOOS.console_log("Could not upload manifest files due to an error: " + str(e))
             return None
         finally:
-            if total_valid_manifest_count > 0:
-                SOOS.console_log(f"Total valid manifests sent: {total_valid_manifest_count}")
-                return total_valid_manifest_count
-            else:
-                return None
+            # total may be zero
+            SOOS.console_log(f"Total valid manifests sent: {total_valid_manifest_count}")
+            return total_valid_manifest_count
 
     @staticmethod
     def recursive_glob(treeroot, pattern):
